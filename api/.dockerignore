@@ -1,0 +1,15 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+
+# Python
+ett_backend/__pycache__/
+ett_backend/*/__pycache__/
+ett_backend/*/*/__pycache__/
+ett_backend/*/*/*/__pycache__/
+.env/
+.venv/
+venv/
