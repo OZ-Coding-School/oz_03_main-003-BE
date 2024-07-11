@@ -19,6 +19,7 @@ class AIDialog(TimeStampModel):
 
 class ChatRoom(TimeStampModel):
     chat_room_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    analyze_target_name = models.CharField(max_length=255)  # 감정 분석 할 상대방 이름
-    analyze_target_relation = models.CharField(max_length=255)  # 감정 분석 할 상대방과의 관계
+    char_room_name = models.CharField(max_length=255, default="채팅방") # Chat Room Name
+    analyze_target_name = models.CharField(max_length=255, null=True) # 감정 분석 할 상대방 이름
+    analyze_target_relation = models.CharField(max_length=255, null=True)  # 감정 분석 할 상대방과의 관계
     user = models.ForeignKey(User, on_delete=models.CASCADE)
