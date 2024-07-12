@@ -180,8 +180,8 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://emotion.yoyobar.xyz",
-    "https://emotion.yoyobar.xyz",
+    "http://emotree.yoyobar.xyz",
+    "https://emotree.yoyobar.xyz",
     "http://localhost:8000",
     "http://localhost:5173",
 ]
