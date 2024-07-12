@@ -44,11 +44,12 @@ INSTALLED_APPS = [
     "trees.apps.TreesConfig",
     "common.apps.CommonConfig",
     "rest_framework",
-    "rest_framework_simplejwt.token_blacklist",
+    "rest_framework_simplejwt",
 ]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 MIDDLEWARE = [
@@ -60,6 +61,21 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,  # 리프레쉬 토큰은 자동회전 x
+    "BLACKLIST_AFTER_ROTATION": True,  # 이전에 사용한 토큰 블랙리스트 추가
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "VERIFYING_KEY": None,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "USER_ID_FIELD": "uuid",  # User 모델의 uuid 필드를 사용합니다.
+    "USER_ID_CLAIM": "user_uuid",
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+}
 
 ROOT_URLCONF = "config.urls"
 
