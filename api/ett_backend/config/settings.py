@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG")
 
-ALLOWED_HOSTS: list = []
+ALLOWED_HOSTS: list = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
 
 # Application definition
@@ -153,3 +153,38 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CORS 설정
+# 사용할 HTTP Method 옵션
+CORS_ALLOW_METHODS = [
+    "GET",
+    "OPTIONS",
+    "POST",
+    "PUT",
+    "DELETE",
+]
+
+# 허용할 HTTP Header
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://emotion.yoyobar.xyz",
+    "https://emotion.yoyobar.xyz",
+    "http://localhost:8000",
+    "http://localhost:5173",
+]
+
+# AUTH User Model
+AUTH_USER_MODEL = "users.User"
