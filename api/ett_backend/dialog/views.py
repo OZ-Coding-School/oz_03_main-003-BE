@@ -27,28 +27,28 @@ class ChatRoomListCreateView(APIView):
 
 class ChatRoomDetailView(APIView):
     # GET : 특정 채팅방 가져오기
-    def get(self, request, chat_room_id):
-        chat_room = get_object_or_404(ChatRoom, chat_room_id=chat_room_id)
+    def get(self, request, chat_room_uuid):
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
         serializer = ChatRoomSerializer(chat_room)
         return Response(serializer.data)
 
     # DELETE : 해당 채팅방 삭제
-    def delete(self, request, chat_room_id):
-        chat_room = get_object_or_404(ChatRoom, chat_room_id=chat_room_id)
+    def delete(self, request, chat_room_uuid):
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
         chat_room.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class UserDialogListCreateView(APIView):
     # GET : 특정 채팅방 정보 조회
-    def get(self, request, chat_room_id):
-        user_dialogs = UserDialog.objects.filter(chat_room__chat_room_id=chat_room_id)
+    def get(self, request, chat_room_uuid):
+        user_dialogs = UserDialog.objects.filter(chat_room__chat_room_uuid=chat_room_uuid)
         serializer = UserDialogSerializer(user_dialogs, many=True)
         return Response(serializer.data)
 
     # POST : 메시지 전송
-    def post(self, request, chat_room_id):
-        chat_room = get_object_or_404(ChatRoom, chat_room_id=chat_room_id)
+    def post(self, request, chat_room_uuid):
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
         serializer = UserDialogSerializer(data=request.data)
         if serializer.is_valid():
             user_dialog = serializer.save(chat_room=chat_room)
@@ -58,7 +58,7 @@ class UserDialogListCreateView(APIView):
 
 class AIDialogListView(APIView):
     # GET : AI로부터 받은 메시지 조회
-    def get(self, request, chat_room_id):
-        ai_dialogs = AIDialog.objects.filter(user_dialog__chat_room__chat_room_id=chat_room_id)
+    def get(self, request, chat_room_uuid):
+        ai_dialogs = AIDialog.objects.filter(user_dialog__chat_room__chat_room_uuid=chat_room_uuid)
         serializer = AIDialogSerializer(ai_dialogs, many=True)
         return Response(serializer.data)
