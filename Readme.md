@@ -1,15 +1,6 @@
 ## 개요
 
-<h3 align="center">Emotion Tree Talk 프로젝트 🎄 </h2>
-<p align="center">
-<img src="https://img.shields.io/badge/-typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=48a0eb">
-<img src="https://img.shields.io/badge/-React-20232a?style=for-the-badge&logo=React&logoColor=61dafb">
-<img src="https://img.shields.io/badge/-Framer%20Motion-0055FF?style=for-the-badge&logo=Framer&logoColor=white">
-  <img src="https://img.shields.io/badge/-TailwindCSS-647f8d?style=for-the-badge&logo=tailwindcss&logoColor=06B6D4">
-  <img src="https://img.shields.io/badge/-AWS-232F3E?style=for-the-badge&logo=amazonwebservices&logoColor=FF9900">
-  <img src="https://img.shields.io/badge/-ZUSTAND-92305b?style=for-the-badge">
-</p>
-<hr>
+<h3 align="center">Emotion Tree Talk 프로젝트 백엔드 레포지토리🎄 </h3>
 
 ### 커밋 컨벤션
 
