@@ -22,4 +22,4 @@ class TreeDetail(TimeStampModel):
     anger = models.PositiveIntegerField(default=0)  # 화남
     sadness = models.PositiveIntegerField(default=0)  # 슬픔
     worry = models.PositiveIntegerField(default=0)  # 걱정
-    indifference = models.PositiveIntegerField(default=0) # 무관심
+    indifference = models.PositiveIntegerField(default=0)  # 무관심
