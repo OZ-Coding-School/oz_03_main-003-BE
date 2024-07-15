@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "dialog.apps.DialogConfig",
+    "gemini.apps.GeminiConfig",
     "users.apps.UsersConfig",
     "trees.apps.TreesConfig",
     "common.apps.CommonConfig",
