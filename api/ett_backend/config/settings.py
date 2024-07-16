@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_extensions",
     "dialog.apps.DialogConfig",
+    "gemini.apps.GeminiConfig",
     "users.apps.UsersConfig",
     "trees.apps.TreesConfig",
     "common.apps.CommonConfig",
@@ -49,7 +50,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework_simplejwt.authentication.JWTAuthentication",),
-    # "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 MIDDLEWARE = [
@@ -180,8 +181,8 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://emotion.yoyobar.xyz",
-    "https://emotion.yoyobar.xyz",
+    "http://emotree.yoyobar.xyz",
+    "https://emotree.yoyobar.xyz",
     "http://localhost:8000",
     "http://localhost:5173",
 ]

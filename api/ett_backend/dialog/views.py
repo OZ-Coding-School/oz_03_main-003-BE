@@ -1,64 +1,112 @@
-from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.exceptions import ParseError
+from rest_framework.generics import GenericAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
+import json
 
-from .models import AIDialog, ChatRoom, UserDialog
-from .serializers import AIDialogSerializer, ChatRoomSerializer, UserDialogSerializer
+from .models import ChatRoom, UserDialog, AIDialog
+from users.models import User
+from .serializers import UserDialogSerializer
+from gemini.models import GeminiModel
 
+class UserMessagePostView(GenericAPIView):
+    """
+    User message post view
+    """
+    serializer_class = UserDialogSerializer
+    permission_classes = [AllowAny]
 
-class ChatRoomListCreateView(APIView):
-    # GET : 채팅방 목록 불러오기
-    def get(self, request):
-        chat_rooms = ChatRoom.objects.all()
-        serializer = ChatRoomSerializer(chat_rooms, many=True)
-        return Response(serializer.data)
+    def post(self, request, *args, **kwargs):
+        user_uuid = request.query_params.get('user_uuid')
+        chat_room_uuid = request.query_params.get('chat_room_uuid')
+        user_message = request.data.get('message')
 
-    # POST : 새로운 채팅방 생성
-    def post(self, request):
-        serializer = ChatRoomSerializer(data=request.data)
-        if serializer.is_valid():
-            chat_room = serializer.save()
-            return Response(ChatRoomSerializer(chat_room).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ChatRoomDetailView(APIView):
-    # GET : 특정 채팅방 가져오기
-    def get(self, request, chat_room_uuid):
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
-        serializer = ChatRoomSerializer(chat_room)
-        return Response(serializer.data)
+        if not chat_room:
+            return Response(
+                data={"message": "Invalid Chat Room UUID."},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-    # DELETE : 해당 채팅방 삭제
-    def delete(self, request, chat_room_uuid):
+        user = get_object_or_404(User, uuid=user_uuid)
+        if not user:
+            return Response(
+                data={"message": "Invalid User UUID."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        UserDialog.objects.create(
+            user=user,
+            chat_room=chat_room,
+            text=user_message
+        )
+
+        # TODO: Send message to AI Async with Celery
+        # send_message_to_ai(user_uuid, chat_room_uuid, user_message)
+
+        return Response(
+            data={"message":"Successfully delivered message."},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class AIMessageRetrieveView(GenericAPIView):
+    permission_classes = [AllowAny]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.model = GeminiModel().set_model()
+
+    def get(self, request, *args, **kwargs):
+        user_uuid = request.query_params.get('user_uuid')
+        chat_room_uuid = request.query_params.get('chat_room_uuid')
+        user_message = request.query_params.get('message')
+
+        if not user_uuid:
+            return Response(
+                data={"message": "User UUID is not given"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not chat_room_uuid:
+            return Response(
+                data={"message": "Chat Room UUID is not given"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not user_message:
+            return Response(
+                data={"message": "User message is not given"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        response = self.model.generate_content(user_message)
+
+        # 응답 데이터를 JSON 형식으로 파싱
+        response_data = json.loads(response)
+
+        # 구조화된 응답 데이터 생성
+        structured_response = {
+            "sentiments": response_data.get("sentiments", {}),
+            "message": response_data.get("message", "")
+        }
+
+        user = get_object_or_404(User, uuid=user_uuid)
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
-        chat_room.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        user_dialog = UserDialog.objects.filter(
+            Q(user=user) & Q(chat_room=chat_room)
+        ).first()
 
+        AIDialog.objects.create(
+            user=user,
+            chat_room=chat_room,
+            user_dialog=user_dialog,
+            text=response_data.get("message", "")
+        )
 
-class UserDialogListCreateView(APIView):
-    # GET : 특정 채팅방 정보 조회
-    def get(self, request, chat_room_uuid):
-        user_dialogs = UserDialog.objects.filter(chat_room__chat_room_uuid=chat_room_uuid)
-        serializer = UserDialogSerializer(user_dialogs, many=True)
-        return Response(serializer.data)
-
-    # POST : 메시지 전송
-    def post(self, request, chat_room_uuid):
-        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
-        serializer = UserDialogSerializer(data=request.data)
-        if serializer.is_valid():
-            user_dialog = serializer.save(chat_room=chat_room)
-            return Response(UserDialogSerializer(user_dialog).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class AIDialogListView(APIView):
-    # GET : AI로부터 받은 메시지 조회
-    def get(self, request, chat_room_uuid):
-        ai_dialogs = AIDialog.objects.filter(user_dialog__chat_room__chat_room_uuid=chat_room_uuid)
-        serializer = AIDialogSerializer(ai_dialogs, many=True)
-        return Response(serializer.data)
+        return Response(
+            data=structured_response,
+            status=status.HTTP_200_OK,
+        )
