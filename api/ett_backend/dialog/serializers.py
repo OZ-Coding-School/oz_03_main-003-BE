@@ -7,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 
 
 class UserDialogSerializer(serializers.ModelSerializer):
+    # write_only=True : Request로 들어온 input 값으로만 사용하는 필드임을 명시하는 것
     user_uuid = serializers.UUIDField(write_only=True) # 클라이언트 요청에서 사용자 UUID를 받아온다.
     chat_room_uuid = serializers.UUIDField(write_only=True) # 클라이언트 요청에서 채팅방 UUID를 받아온다.
     user_message = serializers.CharField(write_only=True) # 클라이언트 요청에서 사용자가 전송한 메시지를 받아온다.

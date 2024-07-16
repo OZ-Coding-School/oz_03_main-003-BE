@@ -14,6 +14,7 @@ from dialog.serializers import (
 )
 from gemini.models import GeminiModel
 
+
 class UserMessagePostView(GenericAPIView):
     """
     User message post view
@@ -30,6 +31,7 @@ class UserMessagePostView(GenericAPIView):
             data={"message":"Successfully delivered message."},
             status=status.HTTP_201_CREATED
         )
+
 
 class UserMessageRetrieveView(GenericAPIView):
     """
