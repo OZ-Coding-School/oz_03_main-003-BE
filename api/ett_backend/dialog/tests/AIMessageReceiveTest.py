@@ -2,7 +2,9 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from users.models import User
 from unittest.mock import patch
-from dialog.models import ChatRoom, UserDialog, AIDialog
+from dialog.models import UserDialog, AIDialog
+from chatroom.models import ChatRoom
+from django.urls import reverse
 import uuid
 import json
 
@@ -47,22 +49,22 @@ class AIMessageReceiveTest(TestCase):
 
         # Post 요청을 통해 사용자가 메세지를 전송한것으로 가정
         post_response = self.client.post(
-            path="/api/chat/send",
+            path=reverse("user-message-send"),
             data={
                 "user_uuid": self.user_uuid,
                 "chat_room_uuid": self.chat_room_uuid,
-                "message": "James: Hello, how are you?\nJenny: I am good. What about you?\n저는 Jenny 입니다"
-            }
+                "user_message": "James: Hello, how are you?\nJenny: I am good. What about you?\n저는 Jenny 입니다"
+            },
+            format="json"
         )
         self.assertEqual(post_response.status_code, 201)
 
         # Get 요청을 통해 AI 응답 반환
         get_response = self.client.get(
-            path="/api/chat/ai_response",
+            path=reverse("get_ai_generate_response"),
             data={
                 "user_uuid": self.user_uuid,
                 "chat_room_uuid": self.chat_room_uuid,
-                "message": "James: Hello, how are you?\nJenny: I am good. What about you?\n저는 Jenny 입니다"
             }
         )
 
@@ -82,5 +84,3 @@ class AIMessageReceiveTest(TestCase):
             "worry": 0.0,
             "indifference": 2.0
         })
-
-        print(response_data)

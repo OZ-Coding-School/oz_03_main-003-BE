@@ -8,7 +8,7 @@ from dialog.models import UserDialog
 from chatroom.models import ChatRoom
 
 
-class UserMessageReceiveTest(TestCase):
+class UserMessageRetrieveTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user_uuid = uuid.uuid4().hex
@@ -31,16 +31,21 @@ class UserMessageReceiveTest(TestCase):
             user=self.user
         )
 
-    def test_message_send(self):
-        response = self.client.post(
-            path=reverse("user-message-send"),
-            data={
-                "user_uuid": self.chat_room_uuid,
-                "chat_room_uuid": self.chat_room_uuid,
-                "user_message": "my message 123"
-            },
-            format="json"
+        self.user_dialog = UserDialog.objects.create(
+            user=self.user,
+            chat_room=self.chat_room,
+            text="Hello, my name is ASDF"
         )
 
-        self.assertEqual(UserDialog.objects.count(), 1)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    def test_user_message_retrieve(self):
+        response = self.client.get(
+            path=reverse("get_user_message"),
+            data={
+                "user_uuid": self.user_uuid,
+                "chat_room_uuid": self.chat_room_uuid,
+            },
+        )
+
+        self.assertIn("user_message", response.data)
+        self.assertEqual(response.data["user_message"], "Hello, my name is ASDF")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
