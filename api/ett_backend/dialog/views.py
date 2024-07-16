@@ -1,4 +1,3 @@
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
@@ -6,9 +5,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 import json
 
-from .models import ChatRoom, UserDialog, AIDialog
-from users.models import User
-from .serializers import UserDialogSerializer
+from dialog.models import UserDialog, AIDialog
+from dialog.serializers import (
+    UserDialogSerializer,
+    AIDialogSerializer,
+    UserMessageRetrieveSerializer,
+    UserMessageListSerializer,
+)
 from gemini.models import GeminiModel
 
 class UserMessagePostView(GenericAPIView):
@@ -19,91 +22,96 @@ class UserMessagePostView(GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        user_uuid = request.query_params.get('user_uuid')
-        chat_room_uuid = request.query_params.get('chat_room_uuid')
-        user_message = request.data.get('message')
-
-        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
-        if not chat_room:
-            return Response(
-                data={"message": "Invalid Chat Room UUID."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        user = get_object_or_404(User, uuid=user_uuid)
-        if not user:
-            return Response(
-                data={"message": "Invalid User UUID."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        UserDialog.objects.create(
-            user=user,
-            chat_room=chat_room,
-            text=user_message
-        )
-
-        # TODO: Send message to AI Async with Celery
-        # send_message_to_ai(user_uuid, chat_room_uuid, user_message)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True) # validation exception 발생하면 자동으로 에러코드 반환
+        serializer.save()
 
         return Response(
             data={"message":"Successfully delivered message."},
             status=status.HTTP_201_CREATED
         )
 
-
-class AIMessageRetrieveView(GenericAPIView):
+class UserMessageRetrieveView(GenericAPIView):
+    """
+    User message retrieve view
+    """
+    serializer_class = UserMessageRetrieveSerializer
     permission_classes = [AllowAny]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.model = GeminiModel().set_model()
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        return Response({
+            "user_uuid": serializer.validated_data["user_uuid"],
+            "chat_room_uuid": serializer.validated_data["chat_room_uuid"],
+            "user_message": get_object_or_404(
+                UserDialog, user=serializer.validated_data["user"],
+                chat_room=serializer.validated_data["chat_room"]
+            ).text
+        })
+
+class UserMessageListView(GenericAPIView):
+    """
+    Get all dialog list of User
+    """
+    serializer_class = UserMessageListSerializer
+    permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
-        user_uuid = request.query_params.get('user_uuid')
-        chat_room_uuid = request.query_params.get('chat_room_uuid')
-        user_message = request.query_params.get('message')
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        user_dialog_queryset = UserDialog.objects.filter(
+            user=serializer.validated_data["user"]
+        )
+        ai_dialog_queryset = AIDialog.objects.filter(
+            user=serializer.validated_data["user"]
+        )
 
-        if not user_uuid:
-            return Response(
-                data={"message": "User UUID is not given"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        messages = []
+        for user_dialog in user_dialog_queryset:
+            ai_response = ai_dialog_queryset.filter(user_dialog=user_dialog).first()
+            messages.append({
+                "user_uuid": user_dialog.user.uuid,
+                "chat_room_uuid": user_dialog.chat_room.chat_room_uuid,
+                "user_message": user_dialog.text,
+                "ai_response": ai_response.text if ai_response else None
+            })
 
-        if not chat_room_uuid:
-            return Response(
-                data={"message": "Chat Room UUID is not given"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(messages, status=status.HTTP_200_OK)
 
-        if not user_message:
-            return Response(
-                data={"message": "User message is not given"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
-        response = self.model.generate_content(user_message)
+class AIMessageRetrieveView(GenericAPIView):
+    serializer_class = AIDialogSerializer
+    permission_classes = [AllowAny]
 
-        # 응답 데이터를 JSON 형식으로 파싱
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        model = GeminiModel().set_model()
+        response = model.generate_content(
+            UserDialog.objects.filter(
+                user=serializer.validated_data["user"],
+                chat_room=serializer.validated_data["chat_room"]
+            ).first().text
+        )
+
+        # Gemini API 응답 데이터를 JSON 형식으로 파싱
         response_data = json.loads(response)
 
-        # 구조화된 응답 데이터 생성
+        # json 형식으로 응답 데이터 생성 (Django에서 전달하는)
         structured_response = {
             "sentiments": response_data.get("sentiments", {}),
-            "message": response_data.get("message", "")
+            "message": response_data.get("message", "") # AI가 생성한 메세지 입니다.
         }
 
-        user = get_object_or_404(User, uuid=user_uuid)
-        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
-        user_dialog = UserDialog.objects.filter(
-            Q(user=user) & Q(chat_room=chat_room)
-        ).first()
-
+        # AIDialog instance 생성
         AIDialog.objects.create(
-            user=user,
-            chat_room=chat_room,
-            user_dialog=user_dialog,
-            text=response_data.get("message", "")
+            user=serializer.validated_data["user"],
+            chat_room=serializer.validated_data["chat_room"],
+            user_dialog=serializer.validated_data["user_dialog"],
+            text=structured_response["message"],
         )
 
         return Response(
