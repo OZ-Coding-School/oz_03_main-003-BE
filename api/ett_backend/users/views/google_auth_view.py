@@ -14,8 +14,9 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        access_token = request.data.get("access_token")
-        if not access_token:
+        try:
+            access_token = request.data.get("access_token")
+        except KeyError:
             return Response({"message": "Access token is missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Google API를 통해 사용자 정보 가져오기
