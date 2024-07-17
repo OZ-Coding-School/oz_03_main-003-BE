@@ -1,4 +1,5 @@
 import requests
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
@@ -33,27 +34,32 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
         name = userinfo.get("name")
         profile_image = userinfo.get("picture")
 
-        user, created = User.objects.get_or_create(
-            email=email,
-            defaults={
-                "username": name,
-                "profile_image": profile_image,
-                "social_platform": "google",
-            },
-        )
+        try:
+            with transaction.atomic():
+                user, created = User.objects.get_or_create(
+                    email=email,
+                    defaults={
+                        "username": name,
+                        "profile_image": profile_image,
+                        "social_platform": "google",
+                    },
+                )
 
-        if not created:
-            user.last_login = timezone.now()
-            user.save()
+                if not created:
+                    user.last_login = timezone.now()
+                    user.save()
 
-        # JWT 토큰 생성
-        jwt_tokens = get_jwt_tokens_for_user(user)
+                # JWT 토큰 생성
+                jwt_tokens = get_jwt_tokens_for_user(user)
 
-        return Response(
-            data={
-                "message": "Successfully logged in",
-                "access": jwt_tokens["access"],
-                "refresh": jwt_tokens["refresh"],
-            },
-            status=status.HTTP_200_OK,
-        )
+            return Response(
+                data={
+                    "message": "Successfully logged in",
+                    "access": jwt_tokens["access"],
+                    "refresh": jwt_tokens["refresh"],
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
