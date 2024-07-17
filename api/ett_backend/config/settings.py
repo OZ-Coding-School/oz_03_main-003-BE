@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "chatroom.apps.ChatroomConfig",
     "rest_framework",
     "rest_framework_simplejwt",
+    "corsheaders",
 ]
 
 REST_FRAMEWORK = {
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "corsheaders.middleware.CorsMiddleware"
 ]
 
 SIMPLE_JWT = {
@@ -192,3 +194,8 @@ CORS_ALLOWED_ORIGINS = [
 
 # AUTH User Model
 AUTH_USER_MODEL = "users.User"
+
+# COOKIE
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_TRUSTED_ORIGINS = ["https://emotree.yoyobar.xyz"]
