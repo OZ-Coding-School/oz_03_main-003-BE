@@ -52,40 +52,6 @@ class GoogleEnvironments:
         return self._google_state
 
 
-def get_google_tokens_and_user_data(google_data_json):
-    access_token = google_data_json["access_token"]
-    id_token = google_data_json["id_token"]
-
-    # payload에 들어있는 사용자 정보를 가져오려면 jwt를 decode 해야한다
-    decoded_id_token = decode_jwt(id_token)
-    user_data = {
-        "email": decoded_id_token.get("email"),
-        "name": decoded_id_token.get("name"),
-        "profile_image": decoded_id_token.get("picture"),
-    }
-    return access_token, user_data
-
-
-def get_google_public_keys():
-    """
-    Google의 공개키를 가져와주는 함수
-    """
-    response = requests.get("https://www.googleapis.com/oauth2/v3/certs")
-    if response.status_code != 200:
-        raise ImproperlyConfigured("Failed to fetch Google public keys")
-    return response.json()
-
-
-def decode_jwt(jwt_token) -> Any:
-    try:
-        decoded_token = jwt.decode(jwt_token, options={"verify_signature": False})
-        return decoded_token
-    except jwt.ExpiredSignatureError:
-        return {"error": "ID token has expired"}
-    except jwt.InvalidTokenError:
-        return {"error": "Invalid ID token"}
-
-
 def get_jwt_tokens_for_user(user) -> Dict:
     refresh: RefreshToken = cast(RefreshToken, RefreshToken.for_user(user))
     return {
