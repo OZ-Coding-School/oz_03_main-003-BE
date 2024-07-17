@@ -1,10 +1,10 @@
+import uuid
+
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
 from chatroom.models import ChatRoom
 from users.models import User
-
-import uuid
 
 
 class ChatRoomCreateSerializer(serializers.ModelSerializer):
@@ -31,8 +31,8 @@ class ChatRoomCreateSerializer(serializers.ModelSerializer):
         return chat_room
 
     class Meta:
-        model=ChatRoom
-        fields=["user_uuid", "chat_room_name", "analyze_target_name", "analyze_target_relation"]
+        model = ChatRoom
+        fields = ["user_uuid", "chat_room_name", "analyze_target_name", "analyze_target_relation"]
 
 
 class ChatRoomListSerializer(serializers.Serializer):
@@ -72,12 +72,8 @@ class ChatRoomUpdateSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
-        instance.chat_room_name = validated_data.get(
-            "new_chat_room_name", instance.chat_room_name
-        )
-        instance.analyze_target_name = validated_data.get(
-            "new_analyze_target_name", instance.analyze_target_name
-        )
+        instance.chat_room_name = validated_data.get("new_chat_room_name", instance.chat_room_name)
+        instance.analyze_target_name = validated_data.get("new_analyze_target_name", instance.analyze_target_name)
         instance.analyze_target_relation = validated_data.get(
             "new_analyze_target_relation", instance.analyze_target_relation
         )
@@ -91,7 +87,7 @@ class ChatRoomUpdateSerializer(serializers.ModelSerializer):
             "chat_room_uuid",
             "new_chat_room_name",
             "new_analyze_target_name",
-            "new_analyze_target_relation"
+            "new_analyze_target_relation",
         ]
 
 

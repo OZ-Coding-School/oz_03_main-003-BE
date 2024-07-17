@@ -1,7 +1,8 @@
 from django.urls import path
 
+from dialog.views import AIMessageRetrieveView, UserMessageListView, UserMessagePostView, UserMessageRetrieveView
+
 from . import views
-from dialog.views import UserMessagePostView, AIMessageRetrieveView, UserMessageRetrieveView, UserMessageListView
 
 urlpatterns = [
     path("messages/list", UserMessageListView.as_view(), name="get_user_message_list"),

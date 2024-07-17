@@ -17,8 +17,11 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, username=None, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("uuid", uuid.uuid4().hex)
+        extra_fields.setdefault("username", "Administrator")
+        extra_fields.setdefault("social_platform", "none")
 
         if not email:
             raise ValueError("이메일 정보를 가져올 수 없습니다")
