@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "chatroom.apps.ChatroomConfig",
     "rest_framework",
     "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
 ]
 
@@ -64,7 +65,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware"
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 SIMPLE_JWT = {
@@ -201,4 +202,4 @@ CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = ["https://emotree.yoyobar.xyz"]
 
 # Test env
-TEST = os.getenv('TEST', 'False') == 'True'
+TEST = os.getenv("TEST", "False") == "True"
