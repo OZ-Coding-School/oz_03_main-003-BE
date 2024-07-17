@@ -23,6 +23,7 @@ class UserGoogleTokenReceiverTest(APITestCase):
         }
 
         response = self.client.post(self.url, data={"access_token": "valid_access_token"}, format='json')
+        print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["message"], "Successfully logged in")
@@ -30,6 +31,7 @@ class UserGoogleTokenReceiverTest(APITestCase):
         self.assertIn("refresh", response.data)
 
         # Verify the user is created
+        self.assertEqual(User.objects.count(), 1)
         user = User.objects.get(email="testuser@gmail.com")
         self.assertIsNotNone(user)
         self.assertEqual(user.username, "Test User")

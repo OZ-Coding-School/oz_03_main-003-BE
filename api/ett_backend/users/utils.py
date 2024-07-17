@@ -52,8 +52,8 @@ class GoogleEnvironments:
         return self._google_state
 
 
-def get_jwt_tokens_for_user(user) -> Dict:
-    refresh: RefreshToken = cast(RefreshToken, RefreshToken.for_user(user))
+def get_jwt_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
     return {
         "access": str(refresh.access_token),
         "refresh": str(refresh),

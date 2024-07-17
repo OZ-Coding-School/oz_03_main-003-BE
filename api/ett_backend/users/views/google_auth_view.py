@@ -9,6 +9,9 @@ from users.models import User
 from users.serializers import EmptySerializer
 from users.utils import get_jwt_tokens_for_user
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 class UserGoogleTokenReceiver(generics.GenericAPIView):
     serializer_class = EmptySerializer
@@ -42,6 +45,7 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                         "username": name,
                         "profile_image": profile_image,
                         "social_platform": "google",
+                        "is_active": True,
                     },
                 )
 
@@ -49,7 +53,7 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                     user.last_login = timezone.now()
                     user.save()
 
-                # JWT 토큰 생성
+                # Generate JWT tokens within the atomic transaction to ensure user is saved
                 jwt_tokens = get_jwt_tokens_for_user(user)
 
             return Response(
@@ -62,4 +66,5 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
             )
 
         except Exception as e:
+            logger.error(f"An error occurred: {str(e)}", exc_info=True)
             return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
