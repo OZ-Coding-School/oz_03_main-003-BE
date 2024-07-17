@@ -9,5 +9,6 @@ from rest_framework.response import Response
 
 class HealthCheck(GenericAPIView):
     permission_classes = [AllowAny]
+
     def get(self, request, *args, **kwargs):
         return Response(data={"Message": "HELLO"}, status=status.HTTP_200_OK)

@@ -1,11 +1,14 @@
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from users.serializers import UserTokenVerifySerializer, UserTokenRefreshSerializer, UserLogoutSerializer, \
-    UserDeleteSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+from users.serializers import (
+    UserDeleteSerializer,
+    UserLogoutSerializer,
+    UserTokenRefreshSerializer,
+    UserTokenVerifySerializer,
+)
 from users.utils import get_jwt_tokens_for_user
 
 
@@ -27,14 +30,10 @@ class UserTokenRefreshView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        jwt_tokens = get_jwt_tokens_for_user(serializer.validated_data['user'])
+        jwt_tokens = get_jwt_tokens_for_user(serializer.validated_data["user"])
 
         return Response(
-            data={
-                "access": jwt_tokens['access'],
-                "refresh": jwt_tokens['refresh']
-            },
-            status=status.HTTP_200_OK
+            data={"access": jwt_tokens["access"], "refresh": jwt_tokens["refresh"]}, status=status.HTTP_200_OK
         )
 
 
@@ -47,7 +46,7 @@ class UserLogoutView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            refresh_token = serializer.validated_data['refresh_token']
+            refresh_token = serializer.validated_data["refresh_token"]
             token = RefreshToken(refresh_token)
             token.blacklist()
         except TokenError as e:
@@ -67,7 +66,7 @@ class UserDeleteView(generics.GenericAPIView):
 
         try:
             user.delete()
-            refresh_token = serializer.validated_data['refresh_token']
+            refresh_token = serializer.validated_data["refresh_token"]
             token = RefreshToken(refresh_token)
             token.blacklist()
         except TokenError as e:

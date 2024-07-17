@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass, field
-from typing import cast, Dict, Any
+from typing import Any, Dict, cast
 
 import jwt
 import requests

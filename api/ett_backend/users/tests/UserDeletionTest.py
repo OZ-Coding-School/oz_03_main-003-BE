@@ -1,11 +1,12 @@
-from rest_framework.test import APITestCase, APIClient
-from rest_framework_simplejwt.tokens import AccessToken
-from users.serializers import UserTokenVerifySerializer
-from users.models import User
 import uuid
-from rest_framework_simplejwt.tokens import RefreshToken
+
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+
+from users.models import User
+from users.serializers import UserTokenVerifySerializer
 
 
 class UserDeletionTest(APITestCase):
@@ -14,24 +15,21 @@ class UserDeletionTest(APITestCase):
         # Given
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username='testuser',
-            email='testuser@example.com',
+            username="testuser",
+            email="testuser@example.com",
             uuid=uuid.uuid4().hex,
             social_platform="google",
-            is_active=True
+            is_active=True,
         )
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.access_token)
 
     def test_user_deletion(self):
         # When
-        url = reverse('user_delete')
-        data = {
-            "refresh_token": self.refresh_token,
-            "email": self.user.email
-        }
+        url = reverse("user_delete")
+        data = {"refresh_token": self.refresh_token, "email": self.user.email}
         response = self.client.delete(url, data)
 
         # Then

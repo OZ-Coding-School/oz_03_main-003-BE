@@ -1,18 +1,20 @@
-from rest_framework import serializers
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+
 from users.models import User
 
 
 class EmptySerializer(serializers.Serializer):
     pass
 
+
 class UserTokenVerifySerializer(serializers.Serializer):
     access_token = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        access_token = attrs.get('access_token')
+        access_token = attrs.get("access_token")
 
         if not access_token:
             raise serializers.ValidationError({"message": "Access token is missing"})
@@ -25,11 +27,12 @@ class UserTokenVerifySerializer(serializers.Serializer):
 
         return attrs
 
+
 class UserTokenRefreshSerializer(serializers.Serializer):
     refresh_token = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        refresh_token = attrs.get('refresh_token')
+        refresh_token = attrs.get("refresh_token")
 
         if not refresh_token:
             raise serializers.ValidationError({"message": "Refresh token is missing"})
@@ -53,7 +56,7 @@ class UserLogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField(write_only=True)
 
     def validate(self, attrs):
-        refresh_token = attrs.get('refresh_token')
+        refresh_token = attrs.get("refresh_token")
 
         if not refresh_token:
             raise serializers.ValidationError({"message": "Refresh token is missing"})
@@ -79,8 +82,8 @@ class UserDeleteSerializer(serializers.Serializer):
     email = serializers.EmailField(write_only=True)
 
     def validate(self, attrs):
-        refresh_token = attrs.get('refresh_token')
-        email = attrs.get('email')
+        refresh_token = attrs.get("refresh_token")
+        email = attrs.get("email")
 
         if not refresh_token:
             raise serializers.ValidationError({"message": "Refresh token is missing"})
