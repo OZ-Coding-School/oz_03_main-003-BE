@@ -194,7 +194,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # AUTH User Model
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = 'users.User'
 
 # COOKIE
 SESSION_COOKIE_SECURE = True
