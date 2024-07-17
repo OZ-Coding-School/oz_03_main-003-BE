@@ -27,8 +27,12 @@ class UserGoogleLoginView(generics.GenericAPIView):
             "&scope=openid%20email%20profile"
             f"&state={env.google_state}"
         )
-        print(google_auth_url)
-        return redirect(google_auth_url)
+        return Response(
+            data={
+                "redirect_url": google_auth_url
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 class UserGoogleLoginCallbackView(generics.GenericAPIView):

@@ -18,8 +18,8 @@ class TreeDetail(TimeStampModel):
     tree_growth_level = models.PositiveIntegerField(default=0)
     location_x = models.IntegerField(default=0)  # x coordinate
     location_y = models.IntegerField(default=0)  # y coordinate
-    happiness = models.PositiveIntegerField(default=0)  # 행복도
-    anger = models.PositiveIntegerField(default=0)  # 화남
-    sadness = models.PositiveIntegerField(default=0)  # 슬픔
-    worry = models.PositiveIntegerField(default=0)  # 걱정
-    indifference = models.PositiveIntegerField(default=0)  # 무관심
+    happiness = models.DecimalField(max_digits=2, decimal_places=1)  # 행복도
+    anger = models.DecimalField(max_digits=2, decimal_places=1)  # 화남
+    sadness = models.DecimalField(max_digits=2, decimal_places=1)  # 슬픔
+    worry = models.DecimalField(max_digits=2, decimal_places=1)  # 걱정
+    indifference = models.DecimalField(max_digits=2, decimal_places=1)  # 무관심
