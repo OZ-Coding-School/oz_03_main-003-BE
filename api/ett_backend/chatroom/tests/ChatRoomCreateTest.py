@@ -1,10 +1,12 @@
 import uuid
 
 from django.test import TestCase
-from rest_framework.test import APIClient
-from users.models import User
 from django.urls import reverse
+from rest_framework.test import APIClient
+
 from chatroom.models import ChatRoom
+from users.models import User
+
 
 class ChatRoomCreateTest(TestCase):
     def setUp(self):
@@ -16,7 +18,7 @@ class ChatRoomCreateTest(TestCase):
             profile_image="test",
             social_platform="none",
             is_active=True,
-            is_superuser=False
+            is_superuser=False,
         )
 
     def test_create_chat_room(self):
@@ -28,7 +30,7 @@ class ChatRoomCreateTest(TestCase):
                 "analyze_target_name": "test target",
                 "analyze_target_relation": "test relation",
             },
-            format="json"
+            format="json",
         )
         self.assertEqual(ChatRoom.objects.count(), 1)
 

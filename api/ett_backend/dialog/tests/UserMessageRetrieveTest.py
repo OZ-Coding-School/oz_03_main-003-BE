@@ -1,11 +1,13 @@
 import uuid
+
 from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework import status
 from django.urls import reverse
-from users.models import User
-from dialog.models import UserDialog
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from chatroom.models import ChatRoom
+from dialog.models import UserDialog
+from users.models import User
 
 
 class UserMessageRetrieveTest(TestCase):
@@ -20,7 +22,7 @@ class UserMessageRetrieveTest(TestCase):
             profile_image="test",
             social_platform="none",
             is_active=True,
-            is_superuser=False
+            is_superuser=False,
         )
 
         self.chat_room = ChatRoom.objects.create(
@@ -28,13 +30,11 @@ class UserMessageRetrieveTest(TestCase):
             chat_room_name="test",
             analyze_target_name="test",
             analyze_target_relation="test",
-            user=self.user
+            user=self.user,
         )
 
         self.user_dialog = UserDialog.objects.create(
-            user=self.user,
-            chat_room=self.chat_room,
-            text="Hello, my name is ASDF"
+            user=self.user, chat_room=self.chat_room, text="Hello, my name is ASDF"
         )
 
     def test_user_message_retrieve(self):

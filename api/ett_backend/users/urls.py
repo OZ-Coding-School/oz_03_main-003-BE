@@ -1,6 +1,6 @@
 from django.urls import path
 
-from users.views import UserGoogleLoginView, UserGoogleLoginCallbackView
+from users.views import UserGoogleLoginCallbackView, UserGoogleLoginView
 
 urlpatterns = [
     path("google/login", UserGoogleLoginView.as_view(), name="google_login"),

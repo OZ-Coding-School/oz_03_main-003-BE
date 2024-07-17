@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from .models import User
 
+
 class UserRegisterOrLoginSerializer(serializers.Serializer):
     has_account = serializers.BooleanField(read_only=True)
     email = serializers.EmailField()

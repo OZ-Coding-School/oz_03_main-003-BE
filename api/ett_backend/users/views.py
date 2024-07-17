@@ -1,15 +1,15 @@
-from rest_framework import generics
+import requests
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils import timezone
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.settings import api_settings
+
+from users.models import User
 from users.serializers import EmptySerializer, UserRegisterOrLoginSerializer
 from users.utils import GoogleEnvironments, get_google_tokens_and_user_data, get_jwt_tokens_for_user
-from django.shortcuts import redirect
-from rest_framework import status
-from rest_framework.response import Response
-from django.urls import reverse
-import requests
-from users.models import User
-from rest_framework_simplejwt.settings import api_settings
-from django.utils import timezone
 
 
 class UserGoogleLoginView(generics.GenericAPIView):
@@ -60,12 +60,7 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
         # Google API를 이용하여 access token, id token을 가져온다.
         token_response = requests.post(token_request_url, data=token_params)
         if token_response.status_code != 200:
-            return Response(
-                {
-                    "message": "Failed to get access token"
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"message": "Failed to get access token"}, status=status.HTTP_400_BAD_REQUEST)
 
         """
         id_token 안에는 jwt 형식으로 payload 내부에 사용자 정보가 들어있게 된다.
@@ -80,11 +75,7 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
         """
         token_data = token_response.json()
         if not token_data:
-            return Response(
-                data={
-                "message": "Failed to get tokens and user info"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(data={"message": "Failed to get tokens and user info"}, status=status.HTTP_400_BAD_REQUEST)
         access_token, user_data = get_google_tokens_and_user_data(token_data)
         """
         user_data에 들어있는 정보는 아래와 같다.
@@ -103,7 +94,7 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
                 username=serializer.validated_data["name"],
                 profile_image=serializer.validated_data["profile_image"],
                 social_platform="google",
-                last_login=timezone.now()
+                last_login=timezone.now(),
             )
             user.save()
         else:
@@ -117,7 +108,7 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
             data={
                 "message": "Successfully logged in",
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
 
         # https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpResponse.set_cookie
@@ -125,10 +116,10 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
         response.set_cookie(
             key="JWT_AUTH_ACCESS_COOKIE",
             value=user_login_token["access"],
-            httponly=True, # 클라이언트 측 스크립트에서 쿠키에 접근할 수 없도록 한다.
-            secure=True, # HTTPS를 통해서만 쿠키가 전송
-            samesite="Lax", # CSRF 공격 방지
-            max_age=api_settings.ACCESS_TOKEN_LIFETIME.total_seconds() # 쿠키의 유효 기간 설정 (settings.py)
+            httponly=True,  # 클라이언트 측 스크립트에서 쿠키에 접근할 수 없도록 한다.
+            secure=True,  # HTTPS를 통해서만 쿠키가 전송
+            samesite="Lax",  # CSRF 공격 방지
+            max_age=api_settings.ACCESS_TOKEN_LIFETIME.total_seconds(),  # 쿠키의 유효 기간 설정 (settings.py)
         )
 
         response.set_cookie(
@@ -137,7 +128,7 @@ class UserGoogleLoginCallbackView(generics.GenericAPIView):
             httponly=True,  # 클라이언트 측 스크립트에서 쿠키에 접근할 수 없도록 한다.
             secure=True,  # HTTPS를 통해서만 쿠키가 전송
             samesite="Lax",  # CSRF 공격 방지
-            max_age=api_settings.REFRESH_TOKEN_LIFETIME.total_seconds()  # 쿠키의 유효 기간 설정 (settings.py)
+            max_age=api_settings.REFRESH_TOKEN_LIFETIME.total_seconds(),  # 쿠키의 유효 기간 설정 (settings.py)
         )
 
         return response

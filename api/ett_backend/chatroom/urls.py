@@ -1,11 +1,11 @@
 from django.urls import path
 
 from chatroom.views import (
-    ChatRoomListView,
     ChatRoomCreateView,
+    ChatRoomDeleteView,
+    ChatRoomListView,
     ChatRoomRetrieveView,
     ChatRoomUpdateView,
-    ChatRoomDeleteView,
 )
 
 urlpatterns = [
