@@ -2,6 +2,7 @@ import requests
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.conf import settings
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -27,12 +28,12 @@ class UserGoogleLoginView(generics.GenericAPIView):
             "&scope=openid%20email%20profile"
             f"&state={env.google_state}"
         )
-        return Response(
-            data={
-                "redirect_url": google_auth_url
-            },
-            status=status.HTTP_200_OK
-        )
+        if settings.TEST:
+            return Response(
+                data={"redirect_url": google_auth_url},
+                status=status.HTTP_200_OK
+            )
+        return redirect(google_auth_url)
 
 
 class UserGoogleLoginCallbackView(generics.GenericAPIView):

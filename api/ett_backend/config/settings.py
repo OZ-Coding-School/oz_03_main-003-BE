@@ -199,3 +199,6 @@ AUTH_USER_MODEL = "users.User"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 CSRF_TRUSTED_ORIGINS = ["https://emotree.yoyobar.xyz"]
+
+# Test env
+TEST = os.getenv('TEST', 'False') == 'True'
