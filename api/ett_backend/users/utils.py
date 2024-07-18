@@ -1,10 +1,10 @@
 import os
-import pytz
 from dataclasses import dataclass, field
 
+import pytz
 from django.conf import settings
-from django.utils import timezone
 from django.core.exceptions import ImproperlyConfigured
+from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -59,15 +59,17 @@ def get_jwt_tokens_for_user(user):
         "refresh": str(refresh),
     }
 
+
 def generate_new_access_token_for_user(refresh_token):
     token = RefreshToken(refresh_token)
     return str(token.access_token)
 
-def set_jwt_cookie(response, jwt_tokens):
-    access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
-    refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
-    seoul_timezone = pytz.timezone('Asia/Seoul')
+def set_jwt_cookie(response, jwt_tokens):
+    access_token_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+    refresh_token_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+
+    seoul_timezone = pytz.timezone("Asia/Seoul")
     access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
     refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
 
@@ -93,9 +95,10 @@ def set_jwt_cookie(response, jwt_tokens):
     )
     return response
 
+
 def set_access_cookie(response, access_token):
-    seoul_timezone = pytz.timezone('Asia/Seoul')
-    access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+    seoul_timezone = pytz.timezone("Asia/Seoul")
+    access_token_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
     access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
 
     response.set_cookie(
@@ -110,9 +113,10 @@ def set_access_cookie(response, access_token):
     )
     return response
 
+
 def set_refresh_cookie(response, refresh_token):
-    seoul_timezone = pytz.timezone('Asia/Seoul')
-    refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+    seoul_timezone = pytz.timezone("Asia/Seoul")
+    refresh_token_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
     refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
 
     response.set_cookie(

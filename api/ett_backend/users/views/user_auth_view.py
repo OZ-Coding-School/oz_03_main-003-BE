@@ -1,37 +1,39 @@
-from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken
-from rest_framework_simplejwt.serializers import TokenVerifySerializer
-from rest_framework_simplejwt.tokens import TokenError
+from rest_framework_simplejwt.tokens import AccessToken, TokenError
 
 from users.serializers import (
+    EmptySerializer,
     UserDeleteSerializer,
     UserLogoutSerializer,
-    UserTokenRefreshSerializer,
     UserProfileSerializer,
-    EmptySerializer
+    UserTokenRefreshSerializer,
 )
 from users.utils import generate_new_access_token_for_user, set_access_cookie
 
 
 class UserTokenVerifyView(generics.GenericAPIView):
-    serializer_class = TokenVerifySerializer
+    serializer_class = EmptySerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        token = request.COOKIES.get("access")
+        if not token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            serializer.is_valid(raise_exception=True)
+            AccessToken(token)
             return Response(status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(status=status.HTTP_401_UNAUTHORIZED, data={"detail": str(e)})
+        except (InvalidToken, TokenError):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserTokenRefreshView(generics.GenericAPIView):
     serializer_class = UserTokenRefreshSerializer
-    permission_classes = [AllowAny] # IsAuthenticated 클래스는 Access token을 사용하므로 AllowAny를 사용한다
+    permission_classes = [AllowAny]  # IsAuthenticated 클래스는 Access token을 사용하므로 AllowAny를 사용한다
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -39,7 +41,7 @@ class UserTokenRefreshView(generics.GenericAPIView):
         refresh_token = request.data.get("refresh_token")
         access_token = generate_new_access_token_for_user(refresh_token=refresh_token)
 
-        response= Response(data={"message": "Token refreshed successfully"})
+        response = Response(data={"message": "Token refreshed successfully"})
         set_access_cookie(response=response, access_token=access_token)
         return response
 
@@ -59,8 +61,7 @@ class UserLogoutView(generics.GenericAPIView):
             return Response(status=status.HTTP_200_OK)
         except (InvalidToken, TokenError) as e:
             return Response(
-                data={"message": "Invalid refresh token", "error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                data={"message": "Invalid refresh token", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -83,8 +84,7 @@ class UserDeleteView(generics.GenericAPIView):
             return Response(data={"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         except (InvalidToken, TokenError) as e:
             return Response(
-                data={"message": "Invalid refresh token", "error": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                data={"message": "Invalid refresh token", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST
             )
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

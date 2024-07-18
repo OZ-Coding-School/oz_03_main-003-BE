@@ -13,3 +13,6 @@ class ChatRoom(TimeStampModel):
     analyze_target_name = models.CharField(max_length=255, null=True)  # 감정 분석 할 상대방 이름
     analyze_target_relation = models.CharField(max_length=255, null=True)  # 감정 분석 할 상대방과의 관계
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "chat_room"
