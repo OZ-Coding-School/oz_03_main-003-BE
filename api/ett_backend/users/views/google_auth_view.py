@@ -52,7 +52,11 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
 
                 jwt_tokens = get_jwt_tokens_for_user(user)
 
-            response = set_jwt_cookie(response=Response(), jwt_tokens=jwt_tokens)
+            response = Response(
+                data={"message": "Login successful"},
+                status=status.HTTP_200_OK
+            )
+            response = set_jwt_cookie(response=response, jwt_tokens=jwt_tokens)
             return response
 
         except Exception as e:
