@@ -6,6 +6,7 @@ LABEL maintainer="sullungim"
 
 # Python의 표준 입출력 버퍼링을 비활성화하여 로그가 즉시 출력되도록 설정
 ENV PYTHONUNBUFFERED=1
+ENV TZ=Asia/Seoul
 
 # 로컬 파일 시스템의 requirements.txt 파일을 컨테이너로 복사
 COPY ./requirements.txt /tmp/requirements.txt
@@ -17,6 +18,10 @@ WORKDIR /ett_backend
 
 # curl 설치를 위한 추가
 RUN apk add --no-cache curl
+
+# 시간대 변경
+RUN apk update && apk add tzdata
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # DEV 인수를 false로 설정 (기본값)
 ARG DEV=false

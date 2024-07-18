@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass, field
 
 from django.conf import settings
+from django.utils import timezone
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -62,13 +63,21 @@ def generate_new_access_token_for_user(refresh_token):
     return str(token.access_token)
 
 def set_jwt_cookie(response, jwt_tokens):
+    access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+    refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+
+    access_expiration = timezone.now() + access_token_lifetime
+    refresh_expiration = timezone.now() + refresh_token_lifetime
+
     response.set_cookie(
         key="access",
         value=jwt_tokens["access"],
         httponly=True,
         samesite="Lax",
         secure=True,
-        expires=settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        expires=access_expiration,
+        domain="emotree.yoyobar.xyz",
+        path="/",
     )
     response.set_cookie(
         key="refresh",
@@ -76,28 +85,40 @@ def set_jwt_cookie(response, jwt_tokens):
         httponly=True,
         samesite="Lax",
         secure=True,
-        expires=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+        expires=refresh_expiration,
+        domain="emotree.yoyobar.xyz",
+        path="/",
     )
     return response
 
 def set_access_cookie(response, access_token):
+    access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
+    access_expiration = timezone.now() + access_token_lifetime
+
     response.set_cookie(
         key="access",
         value=access_token,
         httponly=True,
         samesite="Lax",
         secure=True,
-        expires=settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        expires=access_expiration,
+        domain="emotree.yoyobar.xyz",
+        path="/",
     )
     return response
 
 def set_refresh_cookie(response, refresh_token):
+    refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
+    refresh_expiration = timezone.now() + refresh_token_lifetime
+
     response.set_cookie(
         key="refresh",
         value=refresh_token,
         httponly=True,
         samesite="Lax",
         secure=True,
-        expires=settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+        expires=refresh_expiration,
+        domain="emotree.yoyobar.xyz",
+        path="/",
     )
     return response
