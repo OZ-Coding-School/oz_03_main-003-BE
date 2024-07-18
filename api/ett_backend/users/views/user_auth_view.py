@@ -24,13 +24,13 @@ class UserTokenVerifyView(generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         token = request.COOKIES.get("access")
         if not token:
-            return Response(data={"message": "Token not found"}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
         try:
             AccessToken(token)
-            return Response(data={"message": "Valid token"}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_200_OK)
         except (InvalidToken, TokenError):
-            return Response(data={"message": "Invalid token"}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserTokenRefreshView(generics.GenericAPIView):
