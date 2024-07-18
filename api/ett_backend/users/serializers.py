@@ -22,17 +22,18 @@ class UserTokenRefreshSerializer(serializers.Serializer):
             raise serializers.ValidationError({"message": "Refresh token is missing"})
 
         try:
-            # Verify Refresh token
+            # Verify and decode the Refresh token
             token = RefreshToken(refresh_token)
             user_uuid = token["user_uuid"]
 
-            # Verify valid user
+            # Verify the user exists and is active
             get_object_or_404(User, uuid=user_uuid, is_active=True)
-        except (InvalidToken, TokenError):
-            raise AuthenticationFailed({"message": "Serializer : Invalid refresh token"})
+        except (InvalidToken, TokenError, KeyError):
+            raise AuthenticationFailed({"message": "Invalid refresh token"})
         except User.DoesNotExist:
             raise serializers.ValidationError({"message": "User does not exist"})
 
+        attrs["refresh_token"] = refresh_token
         return attrs
 
 

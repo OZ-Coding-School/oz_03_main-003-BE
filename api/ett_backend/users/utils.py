@@ -62,7 +62,9 @@ def get_jwt_tokens_for_user(user):
 
 def generate_new_access_token_for_user(refresh_token):
     token = RefreshToken(refresh_token)
-    return str(token.access_token)
+    new_access_token = token.access_token
+    new_access_token["user_uuid"] = token["user_uuid"]
+    return str(new_access_token)
 
 
 def set_jwt_cookie(response, jwt_tokens):

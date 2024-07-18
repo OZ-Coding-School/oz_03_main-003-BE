@@ -22,12 +22,17 @@ class UserLogoutTest(APITestCase):
         self.url = reverse("user_logout")
 
     def test_user_logout(self):
-        # When
         self.client.cookies['access'] = self.access_token
         self.client.cookies['refresh'] = self.refresh_token
-        response = self.client.post(self.url)
-        print(response.data)
 
-        # Then
+        response = self.client.post(self.url)
+
+        # 응답 쿠키 확인
+        print("Response Cookies:", response.cookies)
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(BlacklistedToken.objects.filter(token__jti=self.refresh["jti"]).exists())
+
+        # 빈 값으로 설정된 쿠키 확인
+        self.assertEqual(response.cookies['access'].value, '')
+        self.assertEqual(response.cookies['refresh'].value, '')
