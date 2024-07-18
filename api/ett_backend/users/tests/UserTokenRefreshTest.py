@@ -1,14 +1,14 @@
+from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.urls import reverse
+from django.contrib.auth import get_user_model
 import uuid
 
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase
-from rest_framework_simplejwt.tokens import RefreshToken
+User = get_user_model()
 
-from users.models import User
+class UserTokenRefreshViewTests(APITestCase):
 
-
-class UserTokenRefreshTest(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
@@ -21,12 +21,16 @@ class UserTokenRefreshTest(APITestCase):
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.access_token)
+        self.url = reverse('token_refresh')
 
-    def test_refresh_jwt_tokens(self):
-        url = reverse("token_refresh")
-        data = {"refresh_token": self.refresh_token, "user_uuid": str(self.user.uuid)}
-        response = self.client.post(url, data)
+    def test_refresh_token_valid(self):
+        # 유효한 refresh token을 사용한 테스트
+        response = self.client.post(self.url, {'refresh_token': self.refresh_token}, format='json')
+        print(response.data)
+
+        # SUCCESS
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("access", response.data)
-        self.assertIn("refresh", response.data)
+
+        # ACCESS_TOKEN
+        self.assertIn('access', response.cookies)
+        print(response.cookies["access"].value)

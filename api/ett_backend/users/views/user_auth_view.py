@@ -1,40 +1,33 @@
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.db import transaction
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.tokens import TokenError
+from users.s3instance import S3Instance
+from users.models import User
 
 from users.serializers import (
     UserDeleteSerializer,
     UserLogoutSerializer,
-    UserTokenRefreshSerializer,
-    UserTokenVerifySerializer,
+    UserTokenRefreshSerializer, UserProfileSerializer,
 )
-from users.utils import get_jwt_tokens_for_user
-
-
-class UserTokenVerifyView(generics.GenericAPIView):
-    serializer_class = UserTokenVerifySerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.query_params)
-        serializer.is_valid(raise_exception=True)
-        return Response(status=status.HTTP_200_OK)
+from users.utils import generate_new_access_token_for_user, set_access_cookie
 
 
 class UserTokenRefreshView(generics.GenericAPIView):
     serializer_class = UserTokenRefreshSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny] # IsAuthenticated 클래스는 Access token을 사용하므로 AllowAny를 사용한다
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        refresh_token = request.data.get("refresh_token")
+        access_token = generate_new_access_token_for_user(refresh_token=refresh_token)
 
-        jwt_tokens = get_jwt_tokens_for_user(serializer.validated_data["user"])
-
-        return Response(
-            data={"access": jwt_tokens["access"], "refresh": jwt_tokens["refresh"]}, status=status.HTTP_200_OK
-        )
+        response= Response(data={"message": "Token refreshed successfully"})
+        set_access_cookie(response=response, access_token=access_token)
+        return response
 
 
 class UserLogoutView(generics.GenericAPIView):
@@ -47,12 +40,16 @@ class UserLogoutView(generics.GenericAPIView):
 
         try:
             refresh_token = serializer.validated_data["refresh_token"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except TokenError as e:
-            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(status=status.HTTP_200_OK)
+            with transaction.atomic():
+                refresh_token.blacklist()
+            return Response(status=status.HTTP_200_OK)
+        except (InvalidToken, TokenError) as e:
+            return Response(
+                data={"message": "Invalid refresh token", "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserDeleteView(generics.GenericAPIView):
@@ -62,16 +59,33 @@ class UserDeleteView(generics.GenericAPIView):
     def delete(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
 
         try:
-            user.delete()
+            user = serializer.validated_data["user"]
             refresh_token = serializer.validated_data["refresh_token"]
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-        except TokenError as e:
-            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            with transaction.atomic():
+                user.delete()
+                refresh_token.blacklist()
+            return Response(data={"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except (InvalidToken, TokenError) as e:
+            return Response(
+                data={"message": "Invalid refresh token", "error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
-            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class UserProfileView(generics.GenericAPIView):
+    serializer_class = UserProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        serializer = self.get_serializer(instance=request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(instance=request.user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"message": "Successfully updated user data"}, status=status.HTTP_200_OK)
