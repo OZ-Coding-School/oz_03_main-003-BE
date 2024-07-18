@@ -1,4 +1,5 @@
 import os
+import pytz
 from dataclasses import dataclass, field
 
 from django.conf import settings
@@ -66,8 +67,9 @@ def set_jwt_cookie(response, jwt_tokens):
     access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
     refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
 
-    access_expiration = timezone.now() + access_token_lifetime
-    refresh_expiration = timezone.now() + refresh_token_lifetime
+    seoul_timezone = pytz.timezone('Asia/Seoul')
+    access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
+    refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
 
     response.set_cookie(
         key="access",
@@ -76,7 +78,7 @@ def set_jwt_cookie(response, jwt_tokens):
         samesite="Lax",
         secure=True,
         expires=access_expiration,
-        domain="emotree.yoyobar.xyz",
+        domain=os.getenv("COOKIE_DOMAIN"),
         path="/",
     )
     response.set_cookie(
@@ -86,14 +88,15 @@ def set_jwt_cookie(response, jwt_tokens):
         samesite="Lax",
         secure=True,
         expires=refresh_expiration,
-        domain="emotree.yoyobar.xyz",
+        domain=os.getenv("COOKIE_DOMAIN"),
         path="/",
     )
     return response
 
 def set_access_cookie(response, access_token):
+    seoul_timezone = pytz.timezone('Asia/Seoul')
     access_token_lifetime = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME']
-    access_expiration = timezone.now() + access_token_lifetime
+    access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
 
     response.set_cookie(
         key="access",
@@ -102,14 +105,15 @@ def set_access_cookie(response, access_token):
         samesite="Lax",
         secure=True,
         expires=access_expiration,
-        domain="emotree.yoyobar.xyz",
+        domain=os.getenv("COOKIE_DOMAIN"),
         path="/",
     )
     return response
 
 def set_refresh_cookie(response, refresh_token):
+    seoul_timezone = pytz.timezone('Asia/Seoul')
     refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME']
-    refresh_expiration = timezone.now() + refresh_token_lifetime
+    refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
 
     response.set_cookie(
         key="refresh",
@@ -118,7 +122,7 @@ def set_refresh_cookie(response, refresh_token):
         samesite="Lax",
         secure=True,
         expires=refresh_expiration,
-        domain="emotree.yoyobar.xyz",
+        domain=os.getenv("COOKIE_DOMAIN"),
         path="/",
     )
     return response

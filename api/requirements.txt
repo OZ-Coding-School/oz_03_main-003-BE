@@ -14,3 +14,4 @@ google-generativeai>=0.7.2,<0.8.0 # Gemini AI API
 requests_mock>=1.12.1,<1.13.0 # Mocking HTTP requests
 boto3>=1.34.136,<1.35.0 # For User profile S3 Upload
 pillow>=10.4.0,<10.5.0 # Python Image Library
+pytz>=2024.1,<2025.0 # Python timezone database
