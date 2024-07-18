@@ -58,3 +58,44 @@ def get_jwt_tokens_for_user(user):
         "access": str(refresh.access_token),
         "refresh": str(refresh),
     }
+
+def generate_new_access_token_for_user(refresh_token):
+    token = RefreshToken(refresh_token)
+    return str(token.access_token)
+
+def set_jwt_cookie(response, jwt_tokens):
+    response.set_cookie(
+        key="access",
+        value=jwt_tokens["access"],
+        httponly=True,
+        samesite="Lax",
+        secure=True,
+    )
+    response.set_cookie(
+        key="refresh",
+        value=jwt_tokens["refresh"],
+        httponly=True,
+        samesite="Lax",
+        secure=True,
+    )
+    return response
+
+def set_access_cookie(response, access_token):
+    response.set_cookie(
+        key="access",
+        value=access_token,
+        httponly=True,
+        samesite="Lax",
+        secure=True,
+    )
+    return response
+
+def set_refresh_cookie(response, refresh_token):
+    response.set_cookie(
+        key="refresh",
+        value=refresh_token,
+        httponly=True,
+        samesite="Lax",
+        secure=True,
+    )
+    return response

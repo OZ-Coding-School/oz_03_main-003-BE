@@ -7,11 +7,8 @@ from rest_framework.response import Response
 
 from users.models import User
 from users.serializers import EmptySerializer
-from users.utils import get_jwt_tokens_for_user
+from users.utils import get_jwt_tokens_for_user, set_jwt_cookie
 
-import logging
-
-logger = logging.getLogger(__name__)
 
 class UserGoogleTokenReceiver(generics.GenericAPIView):
     serializer_class = EmptySerializer
@@ -53,18 +50,10 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                     user.last_login = timezone.now()
                     user.save()
 
-                # Generate JWT tokens within the atomic transaction to ensure user is saved
                 jwt_tokens = get_jwt_tokens_for_user(user)
 
-            return Response(
-                data={
-                    "message": "Successfully logged in",
-                    "access": jwt_tokens["access"],
-                    "refresh": jwt_tokens["refresh"],
-                },
-                status=status.HTTP_200_OK,
-            )
+            response = set_jwt_cookie(response=Response(), jwt_tokens=jwt_tokens)
+            return response
 
         except Exception as e:
-            logger.error(f"An error occurred: {str(e)}", exc_info=True)
-            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": f"{str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
