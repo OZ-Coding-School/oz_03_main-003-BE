@@ -1,9 +1,9 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.exceptions import AuthenticationFailed
 
 from users.models import User
 from users.s3instance import S3Instance
@@ -93,7 +93,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     profile_image = serializers.ImageField(required=False)
 
     def update(self, instance, validated_data):
-        profile_image_file = validated_data.pop('profile_image', None)
+        profile_image_file = validated_data.pop("profile_image", None)
         if profile_image_file:
             s3instance = S3Instance().get_s3_instance()
             profile_image_url = S3Instance.upload_file(s3instance, profile_image_file, instance.uuid)
@@ -117,5 +117,5 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "is_active",
             "is_superuser",
             "created_at",
-            "updated_at"
+            "updated_at",
         ]

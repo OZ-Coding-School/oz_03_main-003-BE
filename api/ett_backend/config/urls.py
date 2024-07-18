@@ -24,7 +24,6 @@ urlpatterns = [
     path("api/dialog/", include("dialog.urls")),
     path("api/chat/", include("chatroom.urls")),
     path("api/auth/", include("users.urls")),
-    path("api/tree/", include("tree.urls")),
-    path("api/forest/", include("forest.urls")),
-    
+    # path("api/tree/", include("trees.urls")),
+    # path("api/forest/", include("forest.urls")),
 ]

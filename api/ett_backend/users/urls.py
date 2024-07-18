@@ -4,9 +4,9 @@ from users.views.google_auth_view import UserGoogleTokenReceiver
 from users.views.user_auth_view import (
     UserDeleteView,
     UserLogoutView,
-    UserTokenRefreshView,
     UserProfileView,
-    UserTokenVerifyView
+    UserTokenRefreshView,
+    UserTokenVerifyView,
 )
 
 urlpatterns = [
