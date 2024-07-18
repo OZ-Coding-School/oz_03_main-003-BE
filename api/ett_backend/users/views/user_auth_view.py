@@ -3,16 +3,30 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.serializers import TokenVerifySerializer
 from rest_framework_simplejwt.tokens import TokenError
-from users.s3instance import S3Instance
-from users.models import User
 
 from users.serializers import (
     UserDeleteSerializer,
     UserLogoutSerializer,
-    UserTokenRefreshSerializer, UserProfileSerializer,
+    UserTokenRefreshSerializer,
+    UserProfileSerializer,
+    EmptySerializer
 )
 from users.utils import generate_new_access_token_for_user, set_access_cookie
+
+
+class UserTokenVerifyView(generics.GenericAPIView):
+    serializer_class = TokenVerifySerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_401_UNAUTHORIZED, data={"detail": str(e)})
 
 
 class UserTokenRefreshView(generics.GenericAPIView):
