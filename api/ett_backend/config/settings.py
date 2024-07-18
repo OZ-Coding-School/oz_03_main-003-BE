@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "trees.apps.TreesConfig",
     "common.apps.CommonConfig",
     "chatroom.apps.ChatroomConfig",
+    "forest.apps.ForestConfig",
     "rest_framework",
     "rest_framework_simplejwt",
 ]
