@@ -3,8 +3,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import InvalidToken
-from rest_framework_simplejwt.serializers import TokenVerifySerializer
-from rest_framework_simplejwt.tokens import TokenError
+from rest_framework_simplejwt.tokens import TokenError, AccessToken
 
 from users.serializers import (
     UserDeleteSerializer,
@@ -17,16 +16,19 @@ from users.utils import generate_new_access_token_for_user, set_access_cookie
 
 
 class UserTokenVerifyView(generics.GenericAPIView):
-    serializer_class = TokenVerifySerializer
+    serializer_class = EmptySerializer
     permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        token = request.COOKIES.get("access")
+        if not token:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            serializer.is_valid(raise_exception=True)
+            AccessToken(token)
             return Response(status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(status=status.HTTP_401_UNAUTHORIZED, data={"detail": str(e)})
+        except (InvalidToken, TokenError):
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 class UserTokenRefreshView(generics.GenericAPIView):
