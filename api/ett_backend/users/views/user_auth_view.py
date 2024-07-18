@@ -1,3 +1,5 @@
+import os
+
 from django.db import transaction
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -33,17 +35,28 @@ class UserTokenVerifyView(generics.GenericAPIView):
 
 class UserTokenRefreshView(generics.GenericAPIView):
     serializer_class = UserTokenRefreshSerializer
-    permission_classes = [AllowAny]  # IsAuthenticated 클래스는 Access token을 사용하므로 AllowAny를 사용한다
+    permission_classes = [AllowAny]
 
     def post(self, request, *args, **kwargs):
-        data = request.data.copy()
-        data["refresh_token"] = request.COOKIES.get("refresh")
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        refresh_token = request.data.get("refresh_token")
-        access_token = generate_new_access_token_for_user(refresh_token=refresh_token)
+        refresh_token = request.COOKIES.get("refresh")
 
-        response = Response(data={"message": "Token refreshed successfully"})
+        if not refresh_token:
+            return Response({"detail": "Refresh token not found in cookies"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data={"refresh_token": refresh_token})
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            access_token = generate_new_access_token_for_user(
+                refresh_token=serializer.validated_data["refresh_token"]
+            )
+        except (InvalidToken, TokenError) as e:
+            return Response(
+                data={"error occurs": "UserTokenRefreshView", "detail": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        response = Response(data={"access": access_token, "message": "Token refreshed successfully"})
         set_access_cookie(response=response, access_token=access_token)
         return response
 
@@ -60,7 +73,10 @@ class UserLogoutView(generics.GenericAPIView):
             refresh_token = serializer.validated_data["refresh_token"]
             with transaction.atomic():
                 refresh_token.blacklist()
-            return Response(status=status.HTTP_200_OK)
+            response = Response(status=status.HTTP_200_OK)
+            response.delete_cookie("access", domain=os.getenv("COOKIE_DOMAIN"), path="/")
+            response.delete_cookie("refresh", domain=os.getenv("COOKIE_DOMAIN"), path="/")
+            return response
         except (InvalidToken, TokenError) as e:
             return Response(
                 data={"message": "Invalid refresh token", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST
