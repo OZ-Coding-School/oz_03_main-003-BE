@@ -1,12 +1,19 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from .views import UserProfileView
+from users.views.google_auth_view import UserGoogleTokenReceiver
+from users.views.user_auth_view import (
+    UserDeleteView,
+    UserLogoutView,
+    UserTokenRefreshView,
+    UserProfileView,
+    UserTokenVerifyView
+)
 
 urlpatterns = [
-    # path("login", UserSocialLoginView.as_view()),
-    # path("logout", UserLogoutView.as_view()),
-    # path("delete", UserDeleteView.as_view()),
-    # path("profile", UserProfileView.as_view()),
-    # path("refresh", CustomUserTokenRefreshView.as_view()),
+    path("google/receiver", UserGoogleTokenReceiver.as_view(), name="google_receiver"),
+    path("token/verify", UserTokenVerifyView.as_view(), name="token_verify"),
+    path("token/refresh", UserTokenRefreshView.as_view(), name="token_refresh"),
+    path("logout", UserLogoutView.as_view(), name="user_logout"),
+    path("delete", UserDeleteView.as_view(), name="user_delete"),
+    path("profile", UserProfileView.as_view(), name="user_profile"),
 ]

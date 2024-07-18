@@ -1,10 +1,13 @@
 import uuid
+
 from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework import status
 from django.urls import reverse
-from users.models import User
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from chatroom.models import ChatRoom
+from users.models import User
+
 
 class ChatRoomUpdateTest(TestCase):
     def setUp(self):
@@ -16,7 +19,7 @@ class ChatRoomUpdateTest(TestCase):
             profile_image="test",
             social_platform="none",
             is_active=True,
-            is_superuser=False
+            is_superuser=False,
         )
         self.chat_room = ChatRoom.objects.create(
             user=self.user,
@@ -29,10 +32,7 @@ class ChatRoomUpdateTest(TestCase):
     def test_delete_chat_room(self):
         response = self.client.delete(
             path=reverse("chat_room_delete"),
-            data={
-                "user_uuid": self.user.uuid,
-                "chat_room_uuid": self.chat_room.chat_room_uuid
-            }
+            data={"user_uuid": self.user.uuid, "chat_room_uuid": self.chat_room.chat_room_uuid},
         )
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

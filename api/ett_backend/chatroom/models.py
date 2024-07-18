@@ -1,5 +1,7 @@
-from django.db import models
 import uuid
+
+from django.db import models
+
 from common.models import TimeStampModel
 from users.models import User
 

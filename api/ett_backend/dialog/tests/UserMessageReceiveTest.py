@@ -1,11 +1,13 @@
 import uuid
+
 from django.test import TestCase
-from rest_framework.test import APIClient
-from rest_framework import status
 from django.urls import reverse
-from users.models import User
-from dialog.models import UserDialog
+from rest_framework import status
+from rest_framework.test import APIClient
+
 from chatroom.models import ChatRoom
+from dialog.models import UserDialog
+from users.models import User
 
 
 class UserMessageReceiveTest(TestCase):
@@ -20,7 +22,7 @@ class UserMessageReceiveTest(TestCase):
             profile_image="test",
             social_platform="none",
             is_active=True,
-            is_superuser=False
+            is_superuser=False,
         )
 
         self.chat_room = ChatRoom.objects.create(
@@ -28,7 +30,7 @@ class UserMessageReceiveTest(TestCase):
             chat_room_name="test",
             analyze_target_name="test",
             analyze_target_relation="test",
-            user=self.user
+            user=self.user,
         )
 
     def test_message_send(self):
@@ -37,9 +39,9 @@ class UserMessageReceiveTest(TestCase):
             data={
                 "user_uuid": self.chat_room_uuid,
                 "chat_room_uuid": self.chat_room_uuid,
-                "user_message": "my message 123"
+                "user_message": "my message 123",
             },
-            format="json"
+            format="json",
         )
 
         self.assertEqual(UserDialog.objects.count(), 1)

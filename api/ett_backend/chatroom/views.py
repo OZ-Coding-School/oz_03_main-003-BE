@@ -1,12 +1,17 @@
 from django.shortcuts import render
-from rest_framework.generics import GenericAPIView, CreateAPIView, ListAPIView, UpdateAPIView, DestroyAPIView
-from rest_framework.permissions import AllowAny
-
-from chatroom.serializers import ChatRoomCreateSerializer, ChatRoomListSerializer, ChatRoomRetrieveSerializer, \
-    ChatRoomUpdateSerializer, ChatRoomDeleteSerializer
-from chatroom.models import ChatRoom
 from rest_framework import status
+from rest_framework.generics import CreateAPIView, DestroyAPIView, GenericAPIView, ListAPIView, UpdateAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
+from chatroom.models import ChatRoom
+from chatroom.serializers import (
+    ChatRoomCreateSerializer,
+    ChatRoomDeleteSerializer,
+    ChatRoomListSerializer,
+    ChatRoomRetrieveSerializer,
+    ChatRoomUpdateSerializer,
+)
 
 
 # Create your views here.
@@ -20,10 +25,7 @@ class ChatRoomCreateView(GenericAPIView):
         serializer.save()
 
         return Response(
-            data={
-                "chat_room_uuid": serializer.validated_data["chat_room_uuid"]
-            },
-            status=status.HTTP_201_CREATED
+            data={"chat_room_uuid": serializer.validated_data["chat_room_uuid"]}, status=status.HTTP_201_CREATED
         )
 
 
@@ -36,23 +38,13 @@ class ChatRoomListView(GenericAPIView):
         serializer = self.get_serializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        chat_room_queryset = ChatRoom.objects.filter(
-            user=serializer.validated_data["user"]
-        )
+        chat_room_queryset = ChatRoom.objects.filter(user=serializer.validated_data["user"])
 
         chat_rooms = []
         for chat_room in chat_room_queryset:
-            chat_rooms.append(
-                {
-                    "chat_room_uuid": chat_room.chat_room_uuid,
-                    "chat_room_name": chat_room.chat_room_name
-                }
-            )
+            chat_rooms.append({"chat_room_uuid": chat_room.chat_room_uuid, "chat_room_name": chat_room.chat_room_name})
 
-        return Response(
-            data=chat_rooms,
-            status=status.HTTP_200_OK
-        )
+        return Response(data=chat_rooms, status=status.HTTP_200_OK)
 
 
 class ChatRoomRetrieveView(GenericAPIView):
@@ -70,8 +62,9 @@ class ChatRoomRetrieveView(GenericAPIView):
                 "analyze_target_name": serializer.validated_data["analyze_target_name"],
                 "analyze_target_relation": serializer.validated_data["analyze_target_relation"],
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
+
 
 class ChatRoomUpdateView(UpdateAPIView):
     serializer_class = ChatRoomUpdateSerializer
@@ -88,8 +81,9 @@ class ChatRoomUpdateView(UpdateAPIView):
                 "message": "Successfully updated chat room.",
                 "chat_room_uuid": chat_room.chat_room_uuid,
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
+
 
 class ChatRoomDeleteView(DestroyAPIView):
     serializer_class = ChatRoomDeleteSerializer
@@ -106,5 +100,5 @@ class ChatRoomDeleteView(DestroyAPIView):
             data={
                 "message": "Successfully deleted chat room.",
             },
-            status=status.HTTP_204_NO_CONTENT
+            status=status.HTTP_204_NO_CONTENT,
         )
