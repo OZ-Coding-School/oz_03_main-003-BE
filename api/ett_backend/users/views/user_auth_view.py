@@ -36,7 +36,9 @@ class UserTokenRefreshView(generics.GenericAPIView):
     permission_classes = [AllowAny]  # IsAuthenticated 클래스는 Access token을 사용하므로 AllowAny를 사용한다
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        data["refresh_token"] = request.COOKIES.get("refresh")
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         refresh_token = request.data.get("refresh_token")
         access_token = generate_new_access_token_for_user(refresh_token=refresh_token)
@@ -51,7 +53,7 @@ class UserLogoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data={"refresh_token": request.COOKIES.get('refresh')})
         serializer.is_valid(raise_exception=True)
 
         try:
@@ -72,7 +74,9 @@ class UserDeleteView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        data = request.data.copy()
+        data["refresh_token"] = request.COOKIES.get("refresh")
+        serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
 
         try:

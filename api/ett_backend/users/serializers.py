@@ -41,7 +41,6 @@ class UserLogoutSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         refresh_token = attrs.get("refresh_token")
-
         if not refresh_token:
             raise serializers.ValidationError({"message": "Refresh token is missing"})
 

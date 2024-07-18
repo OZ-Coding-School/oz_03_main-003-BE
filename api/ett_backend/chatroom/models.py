@@ -6,7 +6,6 @@ from common.models import TimeStampModel
 from users.models import User
 
 
-# Create your models here.
 class ChatRoom(TimeStampModel):
     chat_room_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     chat_room_name = models.CharField(max_length=255, default="My Chat Room")  # Chat Room Name
