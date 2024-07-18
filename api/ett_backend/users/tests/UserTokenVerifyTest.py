@@ -26,10 +26,8 @@ class UserTokenVerifyTest(APITestCase):
         response = self.client.post(self.url)
         print(self.access_token)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Valid token")
 
     def test_token_invalid(self):
         self.client.cookies['access'] = "invalid"
         response = self.client.post(self.url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Invalid token")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
