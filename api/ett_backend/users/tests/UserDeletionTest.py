@@ -23,13 +23,15 @@ class UserDeletionTest(APITestCase):
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.access_token)
+        self.url = reverse("user_delete")
 
     def test_user_deletion(self):
         # When
-        url = reverse("user_delete")
-        data = {"refresh_token": self.refresh_token, "email": self.user.email}
-        response = self.client.delete(url, data)
+        self.client.cookies['access'] = self.access_token
+        self.client.cookies['refresh'] = self.refresh_token
+        data = {"email": self.user.email}
+        response = self.client.delete(self.url, data)
+        print(response.data)
 
         # Then
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
