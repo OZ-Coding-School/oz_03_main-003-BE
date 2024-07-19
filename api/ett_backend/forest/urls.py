@@ -1,9 +1,13 @@
 from django.urls import path
 
-from .views import ForestCreateView, ForestDeleteView, ForestRetrieveView
+from forest.views import (
+    ForestCreateView,
+    ForestReceiveView,
+    ForestDeleteView,
+)
 
 urlpatterns = [
-    path("forest/<uuid:uuid>/", ForestRetrieveView.as_view(), name="forest-detail"),
-    path("forest/create/<uuid:uuid>/", ForestCreateView.as_view(), name="forest-create"),
-    path("forest/delete/", ForestDeleteView.as_view(), name="forest-delete"),
+    path("create", ForestCreateView.as_view(), name="forest_create"),
+    path("get", ForestReceiveView.as_view(), name="forest_receive"),
+    path("delete", ForestDeleteView.as_view(), name="forest_delete"),
 ]
