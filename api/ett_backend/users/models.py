@@ -33,7 +33,7 @@ class UserManager(BaseUserManager):
 
 
 class User(TimeStampModel, AbstractBaseUser):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True, null=False)
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True, null=False, db_index=True)
     username = models.CharField(max_length=255, null=True)
     email = models.EmailField(unique=True, null=False)
     profile_image = models.URLField(max_length=255, null=True)
