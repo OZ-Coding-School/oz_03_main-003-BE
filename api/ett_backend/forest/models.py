@@ -2,7 +2,7 @@ import uuid
 
 from django.db import models
 
-from common.models import TimeStampModel  # common.py의 TimeStampModel 상속
+from common.models import TimeStampModel
 from users.models import User
 
 
