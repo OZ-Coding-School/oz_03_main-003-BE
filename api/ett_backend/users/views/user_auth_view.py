@@ -47,13 +47,10 @@ class UserTokenRefreshView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            access_token = generate_new_access_token_for_user(
-                refresh_token=serializer.validated_data["refresh_token"]
-            )
+            access_token = generate_new_access_token_for_user(refresh_token=serializer.validated_data["refresh_token"])
         except (InvalidToken, TokenError) as e:
             return Response(
-                data={"error occurs": "UserTokenRefreshView", "detail": str(e)},
-                status=status.HTTP_401_UNAUTHORIZED
+                data={"error occurs": "UserTokenRefreshView", "detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED
             )
 
         response = Response(data={"access": access_token, "message": "Token refreshed successfully"})
@@ -66,7 +63,7 @@ class UserLogoutView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data={"refresh_token": request.COOKIES.get('refresh')})
+        serializer = self.get_serializer(data={"refresh_token": request.COOKIES.get("refresh")})
         serializer.is_valid(raise_exception=True)
 
         try:

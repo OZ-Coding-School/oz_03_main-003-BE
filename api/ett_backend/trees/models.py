@@ -8,7 +8,7 @@ from users.models import User
 
 
 class TreeDetail(TimeStampModel):
-    tree_name = models.CharField(max_length=255, default="My Tree")
+    tree_name = models.CharField(max_length=255, unique=True, default="My Tree")
     tree_map = models.ForeignKey(Forest, on_delete=models.CASCADE)
     tree_growth_level = models.PositiveIntegerField(default=0)
     location_x = models.IntegerField(default=0)  # x coordinate

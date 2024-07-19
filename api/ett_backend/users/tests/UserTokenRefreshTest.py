@@ -23,7 +23,7 @@ class UserTokenRefreshViewTests(APITestCase):
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
-        self.client.cookies['refresh'] = self.refresh_token
+        self.client.cookies["refresh"] = self.refresh_token
         self.url = reverse("token_refresh")
 
     def test_refresh_token_valid(self):
@@ -39,7 +39,7 @@ class UserTokenRefreshViewTests(APITestCase):
         print(f"New access token : {response.cookies["access"].value}")
 
         # Test api with refreshed tokens
-        self.client.cookies['access'] = response.cookies["access"].value
+        self.client.cookies["access"] = response.cookies["access"].value
         response = self.client.get(reverse("user_profile"))
         print("Refreshed access token result : ", response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
