@@ -14,7 +14,7 @@ from users.serializers import (
     UserProfileSerializer,
     UserTokenRefreshSerializer,
 )
-from users.utils import generate_new_access_token_for_user, set_access_cookie
+from users.utils import EmotreeAuthClass
 
 
 class UserTokenVerifyView(generics.GenericAPIView):
@@ -47,14 +47,20 @@ class UserTokenRefreshView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            access_token = generate_new_access_token_for_user(refresh_token=serializer.validated_data["refresh_token"])
+            access_token = EmotreeAuthClass.new_access_token_for_user(
+                refresh_token=serializer.validated_data["refresh_token"]
+            )
         except (InvalidToken, TokenError) as e:
             return Response(
                 data={"error occurs": "UserTokenRefreshView", "detail": str(e)}, status=status.HTTP_401_UNAUTHORIZED
             )
 
         response = Response(data={"access": access_token, "message": "Token refreshed successfully"})
-        set_access_cookie(response=response, access_token=access_token)
+        try:
+            EmotreeAuthClass.set_cookie_attributes(response=response, key="access", token=access_token)
+        except ValueError:
+            return Response({"error occurs": "UserTokenRefreshView"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         return response
 
 

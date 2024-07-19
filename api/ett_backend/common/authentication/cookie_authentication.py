@@ -2,8 +2,10 @@ from typing import Optional, Tuple
 
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import AuthUser, JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.tokens import Token
+from rest_framework.exceptions import AuthenticationFailed
+from django.utils.translation import gettext_lazy as _
 
 
 class CookieJWTAuthentication(JWTAuthentication):
@@ -25,3 +27,22 @@ class CookieJWTAuthentication(JWTAuthentication):
             return None
 
         return self.get_user(validated_token), validated_token
+
+    def get_user(self, validated_token: Token) -> AuthUser:
+        """
+        Override method from JWTAuthentication.get_user
+        """
+        try:
+            user_uuid = validated_token["user_uuid"]
+        except KeyError:
+            raise InvalidToken(_("Token contained no recognizable user identification"))
+
+        try:
+            user = self.user_model.objects.get(uuid=user_uuid)
+        except self.user_model.DoesNotExist:
+            raise AuthenticationFailed(_("User not found"), code="user_not_found")
+
+        if not user.is_active:
+            raise AuthenticationFailed(_("User is inactive"), code="user_inactive")
+
+        return user

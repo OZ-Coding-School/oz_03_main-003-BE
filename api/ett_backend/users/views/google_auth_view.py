@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from users.models import User
 from users.serializers import EmptySerializer
-from users.utils import get_jwt_tokens_for_user, set_jwt_cookie
+from users.utils import EmotreeAuthClass
 
 
 class UserGoogleTokenReceiver(generics.GenericAPIView):
@@ -50,10 +50,10 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                     user.last_login = timezone.now()
                     user.save()
 
-                jwt_tokens = get_jwt_tokens_for_user(user)
+                jwt_tokens = EmotreeAuthClass.set_auth_tokens_for_user(user)
 
             response = Response(data={"message": "Login successful"}, status=status.HTTP_200_OK)
-            response = set_jwt_cookie(response=response, jwt_tokens=jwt_tokens)
+            response = EmotreeAuthClass().set_jwt_auth_cookie(response=response, jwt_tokens=jwt_tokens)
             return response
 
         except Exception as e:
