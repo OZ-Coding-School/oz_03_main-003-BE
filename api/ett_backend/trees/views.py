@@ -3,9 +3,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import TreeDetail
-
-# from .serializers import TreeDetailSerializer, TreeMapSerializer
+from trees.models import TreeDetail
+from forest.models import Forest
 
 
 class TreeManagementView(APIView):
@@ -14,16 +13,16 @@ class TreeManagementView(APIView):
     def get(self, request):
         # 트리 맵 조회
         try:
-            tree_map = TreeMap.objects.get(user=request.user)
+            tree_map = Forest.objects.get(user=request.user)
             # serializer = TreeMapSerializer(tree_map)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except TreeMap.DoesNotExist:
+        except Forest.DoesNotExist:
             return Response({"detail": "TreeMap을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request):
         # 트리 이름 변경
         try:
-            tree_map = TreeMap.objects.get(user=request.user)
+            tree_map = Forest.objects.get(user=request.user)
             data = request.data
             tree_name = data.get("tree_name")
 
@@ -33,7 +32,7 @@ class TreeManagementView(APIView):
 
             # serializer = TreeDetailSerializer(tree_detail)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except TreeMap.DoesNotExist:
+        except Forest.DoesNotExist:
             return Response({"detail": "TreeMap을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
         except TreeDetail.DoesNotExist:
             return Response({"detail": "TreeDetail을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
@@ -41,10 +40,10 @@ class TreeManagementView(APIView):
     def delete(self, request):
         # 트리 삭제
         try:
-            tree_map = TreeMap.objects.get(user=request.user)
+            tree_map = Forest.objects.get(user=request.user)
             tree_map.delete()
             return Response({"detail": "트리가 성공적으로 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
-        except TreeMap.DoesNotExist:
+        except Forest.DoesNotExist:
             return Response({"detail": "TreeMap을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
     def get_all_tree_names(self, request):
@@ -56,7 +55,7 @@ class TreeManagementView(APIView):
     def get_emotion_data(self, request):
         # 감정 데이터 총합 조회
         try:
-            tree_map = TreeMap.objects.get(user=request.user)
+            tree_map = Forest.objects.get(user=request.user)
             tree_details = TreeDetail.objects.filter(tree_map=tree_map)
 
             total_happiness = sum(tree.happiness for tree in tree_details)
@@ -73,5 +72,5 @@ class TreeManagementView(APIView):
                 },
                 status=status.HTTP_200_OK,
             )
-        except TreeMap.DoesNotExist:
+        except Forest.DoesNotExist:
             return Response({"detail": "TreeMap을 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)

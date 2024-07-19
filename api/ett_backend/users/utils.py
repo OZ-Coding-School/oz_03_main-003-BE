@@ -52,83 +52,95 @@ class GoogleEnvironments:
         return self._google_state
 
 
-def get_jwt_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        "access": str(refresh.access_token),
-        "refresh": str(refresh),
-    }
+class EmotreeAuthClass:
+    """
+    1. Generate ACCESS_TOKEN, REFRESH_TOKEN
+    2. Cookie settings
+    """
 
+    def __init__(self):
+        self._seoul_timezone = pytz.timezone("Asia/Seoul")
 
-def generate_new_access_token_for_user(refresh_token):
-    token = RefreshToken(refresh_token)
-    new_access_token = token.access_token
-    new_access_token["user_uuid"] = token["user_uuid"]
-    return str(new_access_token)
+        self._access_expiration = (timezone.now() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]).astimezone(
+            self._seoul_timezone
+        )
 
+        self._refresh_expiration = (timezone.now() + settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]).astimezone(
+            self._seoul_timezone
+        )
 
-def set_jwt_cookie(response, jwt_tokens):
-    access_token_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-    refresh_token_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
+    def set_jwt_auth_cookie(self, response, jwt_tokens):
+        """
+        Access token, Refresh token 쿠키 설정 함수
+        """
+        response = self.set_cookie_attributes(
+            response=response,
+            key="access",
+            token=jwt_tokens["access"],
+        )
+        response = self.set_cookie_attributes(
+            response=response,
+            key="refresh",
+            token=jwt_tokens["refresh"],
+        )
+        return response
 
-    seoul_timezone = pytz.timezone("Asia/Seoul")
-    access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
-    refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
+    @staticmethod
+    def set_cookie_attributes(response, key, token):
+        """
+        Cookie 속성 설정 함수
+        key: access or refresh
+        token: jwt token
+        """
 
-    response.set_cookie(
-        key="access",
-        value=jwt_tokens["access"],
-        httponly=True,
-        samesite="Lax",
-        secure=True,
-        expires=access_expiration,
-        domain=os.getenv("COOKIE_DOMAIN"),
-        path="/",
-    )
-    response.set_cookie(
-        key="refresh",
-        value=jwt_tokens["refresh"],
-        httponly=True,
-        samesite="Lax",
-        secure=True,
-        expires=refresh_expiration,
-        domain=os.getenv("COOKIE_DOMAIN"),
-        path="/",
-    )
-    return response
+        if key == "access":
+            expires_at = EmotreeAuthClass()._access_expiration
+        elif key == "refresh":
+            expires_at = EmotreeAuthClass()._refresh_expiration
+        else:
+            raise ValueError("key should be 'access' or 'refresh'")
 
+        response.set_cookie(
+            key=key,
+            value=token,
+            httponly=True,
+            samesite="Lax",
+            secure=True,
+            expires=expires_at,
+            domain=os.getenv("COOKIE_DOMAIN"),
+            path="/",
+        )
+        return response
 
-def set_access_cookie(response, access_token):
-    seoul_timezone = pytz.timezone("Asia/Seoul")
-    access_token_lifetime = settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
-    access_expiration = (timezone.now() + access_token_lifetime).astimezone(seoul_timezone)
+    @staticmethod
+    def new_access_token_for_user(refresh_token):
+        """
+        기존 Refresh token을 사용하여 새로운 access token을 생성하는 함수
+        이때, 새로 생성된 access token에는, user_uuid가 정보가 없는데, 직접 payload에 추가해주어야함
+        """
+        token = RefreshToken(refresh_token)
+        new_access_token = token.access_token
+        new_access_token["user_uuid"] = token["user_uuid"]
+        return str(new_access_token)
 
-    response.set_cookie(
-        key="access",
-        value=access_token,
-        httponly=True,
-        samesite="Lax",
-        secure=True,
-        expires=access_expiration,
-        domain=os.getenv("COOKIE_DOMAIN"),
-        path="/",
-    )
-    return response
+    @staticmethod
+    def set_auth_tokens_for_user(user):
+        """
+        사용자 인증 전용 JWT 생성 함수
+        """
+        refresh = RefreshToken.for_user(user)
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
 
-
-def set_refresh_cookie(response, refresh_token):
-    seoul_timezone = pytz.timezone("Asia/Seoul")
-    refresh_token_lifetime = settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"]
-    refresh_expiration = (timezone.now() + refresh_token_lifetime).astimezone(seoul_timezone)
-
-    response.set_cookie(
-        key="refresh",
-        value=refresh_token,
-        httponly=True,
-        samesite="Lax",
-        secure=True,
-        expires=refresh_expiration,
-        domain=os.getenv("COOKIE_DOMAIN"),
-        path="/",
-    )
-    return response
+    @staticmethod
+    def set_new_access_token_for_user(refresh_token):
+        """
+        기존 Refresh token을 사용하여 새로운 access token을 생성하는 함수
+        이때, 새로 생성된 access token에는, user_uuid가 정보가 없는데, 직접 payload에 추가해주어야함
+        """
+        token = RefreshToken(refresh_token)
+        new_access_token = token.access_token
+        new_access_token["user_uuid"] = token["user_uuid"]
+        return str(new_access_token)

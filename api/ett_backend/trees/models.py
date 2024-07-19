@@ -4,7 +4,6 @@ from django.db import models
 
 from common.models import TimeStampModel
 from forest.models import Forest
-from users.models import User
 
 
 class TreeDetail(TimeStampModel):
