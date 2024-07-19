@@ -1,9 +1,12 @@
-from rest_framework_simplejwt.tokens import RefreshToken, BlacklistedToken
-from rest_framework.test import APITestCase, APIClient
+import uuid
+
 from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+from rest_framework_simplejwt.tokens import BlacklistedToken, RefreshToken
+
 from users.models import User
-import uuid
+
 
 class UserLogoutTest(APITestCase):
 
@@ -22,8 +25,8 @@ class UserLogoutTest(APITestCase):
         self.url = reverse("user_logout")
 
     def test_user_logout(self):
-        self.client.cookies['access'] = self.access_token
-        self.client.cookies['refresh'] = self.refresh_token
+        self.client.cookies["access"] = self.access_token
+        self.client.cookies["refresh"] = self.refresh_token
 
         response = self.client.post(self.url)
 
@@ -34,5 +37,5 @@ class UserLogoutTest(APITestCase):
         self.assertTrue(BlacklistedToken.objects.filter(token__jti=self.refresh["jti"]).exists())
 
         # 빈 값으로 설정된 쿠키 확인
-        self.assertEqual(response.cookies['access'].value, '')
-        self.assertEqual(response.cookies['refresh'].value, '')
+        self.assertEqual(response.cookies["access"].value, "")
+        self.assertEqual(response.cookies["refresh"].value, "")

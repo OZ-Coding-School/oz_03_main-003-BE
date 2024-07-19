@@ -26,7 +26,7 @@ class UserProfileTest(APITestCase):
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
-        self.client.cookies['access'] = self.access_token
+        self.client.cookies["access"] = self.access_token
         self.url = reverse("user_profile")
 
     def test_get_user_profile(self):

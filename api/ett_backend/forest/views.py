@@ -3,28 +3,42 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from trees.models import TreeMap
+from trees.models import TreeDetail
 
-from .models import Forest
+from .models import Forest, User
 from .serializers import ForestSerializer
 
 
-class ForestView(APIView):
+class ForestCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_uuid):
-        # Forest 생성 또는 조회 (CreateForest)
-        forest, created = Forest.objects.get_or_create(user__uuid=user_uuid)
-        serializer = ForestSerializer(forest)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self, request, uuid):
+        # Forest 생성 (CreateForest)
+        data = request.data
+        try:
+            user = User.objects.get(uuid=uuid)
+            forest = Forest.objects.create(user=user, **data)
+            serializer = ForestSerializer(forest)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except User.DoesNotExist:
+            return Response({"message": "User Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def get_forest_data(self, request, tree_uuid):
-        # 특정 Forest 데이터 조회 (GetForestData)
-        forest = Forest.objects.filter(trees__tree_map_uuid=tree_uuid).first()
-        if forest:
+
+class ForestRetrieveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, uuid):
+        # 사용자의 Forest 조회 (RetrieveForest)
+        try:
+            forest = Forest.objects.get(user__uuid=uuid)
             serializer = ForestSerializer(forest)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response({"detail": "Forest를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+        except Forest.DoesNotExist:
+            return Response({"message": "Forest Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ForestDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request):
         # Forest 삭제 (DeleteForest)
@@ -34,6 +48,6 @@ class ForestView(APIView):
         try:
             forest = Forest.objects.get(forest_uuid=forest_uuid)
             forest.delete()
-            return Response({"detail": "Forest가 성공적으로 삭제되었습니다."}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "Successfully Deleted Forest"}, status=status.HTTP_204_NO_CONTENT)
         except Forest.DoesNotExist:
-            return Response({"detail": "Forest를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Forest not found"}, status=status.HTTP_404_NOT_FOUND)

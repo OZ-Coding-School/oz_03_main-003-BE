@@ -27,8 +27,8 @@ class UserDeletionTest(APITestCase):
 
     def test_user_deletion(self):
         # When
-        self.client.cookies['access'] = self.access_token
-        self.client.cookies['refresh'] = self.refresh_token
+        self.client.cookies["access"] = self.access_token
+        self.client.cookies["refresh"] = self.refresh_token
         data = {"email": self.user.email}
         response = self.client.delete(self.url, data)
         print(response.data)
