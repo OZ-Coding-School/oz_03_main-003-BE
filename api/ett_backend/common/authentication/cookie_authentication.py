@@ -1,11 +1,11 @@
 from typing import Optional, Tuple
 
+from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.request import Request
 from rest_framework_simplejwt.authentication import AuthUser, JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.tokens import Token
-from rest_framework.exceptions import AuthenticationFailed
-from django.utils.translation import gettext_lazy as _
 
 
 class CookieJWTAuthentication(JWTAuthentication):

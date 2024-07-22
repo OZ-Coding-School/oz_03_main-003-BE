@@ -12,7 +12,7 @@ class TreeDetail(TimeStampModel):
     tree_uuid = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
     tree_name = models.CharField(max_length=255, default="My Tree")
     tree_level = models.PositiveIntegerField(default=0)
-    location = models.PositiveIntegerField(default=0) # Tree location
+    location = models.PositiveIntegerField(default=0)  # Tree location
 
     class Meta:
         db_table = "tree_detail"

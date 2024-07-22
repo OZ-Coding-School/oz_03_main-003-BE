@@ -1,9 +1,6 @@
 from django.urls import path
 
-from forest.views import (
-    ForestCreateView,
-    ForestRetrieveUpdateDeleteView,
-)
+from forest.views import ForestCreateView, ForestRetrieveUpdateDeleteView
 
 urlpatterns = [
     path("new", ForestCreateView.as_view(), name="forest_create"),

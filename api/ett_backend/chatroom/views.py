@@ -1,104 +1,74 @@
+import uuid
+
+from django.db import transaction
 from rest_framework import status
-from rest_framework.generics import DestroyAPIView, GenericAPIView, UpdateAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
-from chatroom.serializers import (
-    ChatRoomCreateSerializer,
-    ChatRoomDeleteSerializer,
-    ChatRoomListSerializer,
-    ChatRoomRetrieveSerializer,
-    ChatRoomUpdateSerializer,
-)
+from chatroom.serializers import ChatRoomCreateSerializer, ChatRoomSerializer, ChatRoomUpdateSerializer
+from users.serializers import EmptySerializer
 
 
-# Create your views here.
-class ChatRoomCreateView(GenericAPIView):
+class ChatRoomCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = ChatRoomCreateSerializer
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         user = request.user
-        serializer = self.get_serializer(data=request.data, context={"user": user})
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        chat_room = serializer.save()
+        with transaction.atomic():
+            new_chatroom = ChatRoom.objects.create(
+                user=user,
+                chat_room_uuid=uuid.uuid4(),
+                **serializer.validated_data,
+            )
+            new_chatroom.save()
+        response_serializer = self.get_serializer(new_chatroom)
+        return Response(data=response_serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(
-            data={"chat_room_uuid": serializer.validated_data["chat_room_uuid"]},
-            status=status.HTTP_201_CREATED
-        )
 
-
-class ChatRoomListView(GenericAPIView):
-    serializer_class = ChatRoomListSerializer
+class ChatRoomListView(ListAPIView):
+    serializer_class = ChatRoomSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.query_params)
-        serializer.is_valid(raise_exception=True)
-
-        chat_room_queryset = ChatRoom.objects.filter(user=serializer.validated_data["user"])
-
-        chat_rooms = []
-        for chat_room in chat_room_queryset:
-            chat_rooms.append({"chat_room_uuid": chat_room.chat_room_uuid, "chat_room_name": chat_room.chat_room_name})
-
-        return Response(data=chat_rooms, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return ChatRoom.objects.filter(user=self.request.user)
 
 
-class ChatRoomRetrieveView(GenericAPIView):
-    serializer_class = ChatRoomRetrieveSerializer
+class ChatRoomRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = "chat_room_uuid"
 
     def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.query_params)
-        serializer.is_valid(raise_exception=True)
-
+        chat_room_uuid = kwargs.get(self.lookup_field)
+        chat_room = ChatRoom.objects.filter(chat_room_uuid=chat_room_uuid, user=request.user).first()
+        if not chat_room:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = ChatRoomSerializer(chat_room)
         return Response(
-            data={
-                "chat_room_uuid": serializer.validated_data["chat_room_uuid"],
-                "chat_room_name": serializer.validated_data["chat_room_name"],
-                "analyze_target_name": serializer.validated_data["analyze_target_name"],
-                "analyze_target_relation": serializer.validated_data["analyze_target_relation"],
-            },
+            data=serializer.data,
             status=status.HTTP_200_OK,
         )
 
-
-class ChatRoomUpdateView(UpdateAPIView):
-    serializer_class = ChatRoomUpdateSerializer
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        chat_room_uuid = kwargs.get(self.lookup_field)
+        chat_room = ChatRoom.objects.filter(chat_room_uuid=chat_room_uuid, user=request.user).first()
+        if not chat_room:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = ChatRoomUpdateSerializer(instance=chat_room, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        chat_room = serializer.validated_data["chat_room"]
-        serializer.update(chat_room, serializer.validated_data)
+        self.perform_update(serializer)
+        return Response(status=status.HTTP_200_OK)
 
-        return Response(
-            data={
-                "message": "Successfully updated chat room.",
-                "chat_room_uuid": chat_room.chat_room_uuid,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class ChatRoomDeleteView(DestroyAPIView):
-    serializer_class = ChatRoomDeleteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def delete(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid()
-
-        chat_room = serializer.validated_data["chat_room"]
-        chat_room.delete()
-
-        return Response(
-            data={
-                "message": "Successfully deleted chat room.",
-            },
-            status=status.HTTP_204_NO_CONTENT,
-        )
+    def destroy(self, request, *args, **kwargs):
+        chat_room_uuid = kwargs.get(self.lookup_field)
+        chat_room = ChatRoom.objects.filter(chat_room_uuid=chat_room_uuid, user=request.user).first()
+        if not chat_room:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        self.perform_destroy(instance=chat_room)
+        return Response(status=status.HTTP_204_NO_CONTENT)

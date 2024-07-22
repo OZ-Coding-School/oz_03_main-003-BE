@@ -1,34 +1,24 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView
 
-from trees.models import TreeDetail, TreeEmotion
 from forest.models import Forest
-from django.shortcuts import get_object_or_404
+from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
-    TreeSerializer,
-    TreeEmotionListSerializer,
     FilteredTreeEmotionSerializer,
-    TreeUpdateSerializer
+    TreeEmotionListSerializer,
+    TreeSerializer,
+    TreeUpdateSerializer,
 )
+from users.serializers import EmptySerializer
 
 
-class TreeListCreateView(ListCreateAPIView):
-    serializer_class = TreeSerializer
+class TreeCreateView(CreateAPIView):
+    serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
-
-    def list(self, request, *args, **kwargs):
-        user = request.user
-        tree_uuid = request.query_params.get("tree_uuid")
-        if tree_uuid:
-            tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
-            serializer = TreeSerializer(tree)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
-        serializer = TreeSerializer(forest.related_tree.all(), many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -43,7 +33,7 @@ class TreeListCreateView(ListCreateAPIView):
             new_tree = TreeDetail.objects.create(
                 forest=forest,
                 tree_name=f"My tree ({tree_count + 1})",
-                location=tree_count, # Tree 개수에 따라 현재 위치 결정
+                location=tree_count,  # Tree 개수에 따라 현재 위치 결정
             )
             new_tree_emotion = TreeEmotion.objects.create(tree=new_tree)
             new_tree.save()
@@ -52,16 +42,34 @@ class TreeListCreateView(ListCreateAPIView):
         return Response(data={"tree_uuid": new_tree.tree_uuid}, status=status.HTTP_201_CREATED)
 
 
+class TreeListView(ListAPIView):
+    serializer_class = TreeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        user = request.user
+        tree_uuid = request.query_params.get("tree_uuid")
+        if tree_uuid:
+            tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
+            serializer = self.get_serializer(tree)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
+        serializer = self.get_serializer(forest.related_tree.all(), many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = TreeUpdateSerializer
     permission_classes = [IsAuthenticated]
-    lookup_field = 'tree_uuid'
+    lookup_field = "tree_uuid"
     queryset = TreeDetail.objects.all()
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         tree_uuid = kwargs.get(self.lookup_field)
-        tree = get_object_or_404(TreeDetail, tree_uuid=tree_uuid, forest__user=request.user)
+        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
+        if not tree:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(instance=tree, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -85,7 +93,7 @@ class TreeEmotionListView(ListAPIView):
         if tree_uuid:
             tree_emotion = get_object_or_404(TreeEmotion.objects.select_related("tree"), tree__tree_uuid=tree_uuid)
             if request.query_params.get("detail_sentiment"):
-                serializer = FilteredTreeEmotionSerializer(tree_emotion, context={'request': request})
+                serializer = FilteredTreeEmotionSerializer(tree_emotion, context={"request": request})
             else:
                 serializer = TreeEmotionListSerializer(tree_emotion)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -93,7 +101,7 @@ class TreeEmotionListView(ListAPIView):
         # tree_uuid를 제공하지 않은 경우
         # User에 해당하고 Forest에 관련된 TreeDetail 객체를 역참조로 미리 가져온다. (쿼리 2개 발생)
         forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
-        tree_details = forest.related_tree.all() # 전체 tree 데이터를 가져온다
+        tree_details = forest.related_tree.all()  # 전체 tree 데이터를 가져온다
         if not tree_details.exists():
             # 쿼리에 해당하는 Tree가 전혀 존재하지 않다면
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -104,8 +112,8 @@ class TreeEmotionListView(ListAPIView):
             # 해당 Tree에 감정 데이터가 존재하지 않는 경우
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if request.query_params.get("detail_sentiment"): # detail_sentiment query_param이 존재하는 경우
-            serializer = FilteredTreeEmotionSerializer(tree_emotions, many=True, context={'request': request})
+        if request.query_params.get("detail_sentiment"):  # detail_sentiment query_param이 존재하는 경우
+            serializer = FilteredTreeEmotionSerializer(tree_emotions, many=True, context={"request": request})
         else:
             serializer = TreeEmotionListSerializer(tree_emotions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

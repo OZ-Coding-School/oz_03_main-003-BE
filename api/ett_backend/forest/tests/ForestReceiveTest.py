@@ -1,13 +1,12 @@
-from rest_framework.test import APIClient, APITestCase
-
 import uuid
 
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from forest.models import Forest
 from users.models import User
-from django.urls import reverse
-from rest_framework import status
 
 
 class ForestReceiveTest(APITestCase):
@@ -22,11 +21,7 @@ class ForestReceiveTest(APITestCase):
             is_active=True,
         )
 
-        self.forest = Forest.objects.create(
-            user=self.user,
-            forest_uuid=uuid.uuid4(),
-            forest_level=123
-        )
+        self.forest = Forest.objects.create(user=self.user, forest_uuid=uuid.uuid4(), forest_level=123)
 
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
