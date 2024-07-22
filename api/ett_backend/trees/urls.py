@@ -8,6 +8,6 @@ from trees.views import (
 
 urlpatterns = [
     path("", TreeListCreateView.as_view(), name="tree_list_create_view"),
-    path("<str:tree_uuid>", TreeUpdateDeleteView.as_view(), name="tree_update_delete_view"),
+    path("<uuid:tree_uuid>", TreeUpdateDeleteView.as_view(), name="tree_update_delete_view"),
     path("emotion/", TreeEmotionListView.as_view(), name="tree_emotion_view"),
 ]

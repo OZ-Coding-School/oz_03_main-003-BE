@@ -7,9 +7,12 @@ from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIV
 from trees.models import TreeDetail, TreeEmotion
 from forest.models import Forest
 from django.shortcuts import get_object_or_404
-from trees.serializers import TreeSerializer, TreeEmotionListSerializer, FilteredTreeEmotionSerializer, \
+from trees.serializers import (
+    TreeSerializer,
+    TreeEmotionListSerializer,
+    FilteredTreeEmotionSerializer,
     TreeUpdateSerializer
-from users.serializers import EmptySerializer
+)
 
 
 class TreeListCreateView(ListCreateAPIView):
@@ -46,7 +49,7 @@ class TreeListCreateView(ListCreateAPIView):
             new_tree.save()
             new_tree_emotion.save()
 
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(data={"tree_uuid": new_tree.tree_uuid}, status=status.HTTP_201_CREATED)
 
 
 class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -56,7 +59,7 @@ class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
-        tree_uuid = kwargs.get('tree_uuid')
+        tree_uuid = kwargs.get(self.lookup_field)
         tree = get_object_or_404(TreeDetail, tree_uuid=tree_uuid, forest__user=request.user)
         serializer = self.get_serializer(instance=tree, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -64,7 +67,7 @@ class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
-        tree_uuid = kwargs.get('tree_uuid')
+        tree_uuid = kwargs.get(self.lookup_field)
         tree = get_object_or_404(TreeDetail, tree_uuid=tree_uuid, forest__user=request.user)
         self.perform_destroy(instance=tree)
         return Response(status=status.HTTP_204_NO_CONTENT)
