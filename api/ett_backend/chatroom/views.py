@@ -1,7 +1,6 @@
-from django.shortcuts import render
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, DestroyAPIView, GenericAPIView, ListAPIView, UpdateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.generics import DestroyAPIView, GenericAPIView, UpdateAPIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
@@ -16,7 +15,7 @@ from chatroom.serializers import (
 
 # Create your views here.
 class ChatRoomCreateView(GenericAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = ChatRoomCreateSerializer
 
     def post(self, request, *args, **kwargs):
@@ -31,8 +30,7 @@ class ChatRoomCreateView(GenericAPIView):
 
 class ChatRoomListView(GenericAPIView):
     serializer_class = ChatRoomListSerializer
-    permission_classes = [AllowAny]
-    queryset = ChatRoom.objects.all()
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.query_params)
@@ -49,7 +47,7 @@ class ChatRoomListView(GenericAPIView):
 
 class ChatRoomRetrieveView(GenericAPIView):
     serializer_class = ChatRoomRetrieveSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.query_params)
@@ -68,7 +66,7 @@ class ChatRoomRetrieveView(GenericAPIView):
 
 class ChatRoomUpdateView(UpdateAPIView):
     serializer_class = ChatRoomUpdateSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def put(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -87,7 +85,7 @@ class ChatRoomUpdateView(UpdateAPIView):
 
 class ChatRoomDeleteView(DestroyAPIView):
     serializer_class = ChatRoomDeleteSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

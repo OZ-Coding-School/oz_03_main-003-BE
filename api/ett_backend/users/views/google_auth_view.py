@@ -45,14 +45,16 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                         "is_active": True,
                     },
                 )
+                response = Response(data={"message": "Login successful"}, status=status.HTTP_201_CREATED)
 
                 if not created:
+                    # 기존 회원이 존재하는 경우
                     user.last_login = timezone.now()
                     user.save()
+                    response.status_code = status.HTTP_200_OK
 
                 jwt_tokens = EmotreeAuthClass.set_auth_tokens_for_user(user)
 
-            response = Response(data={"message": "Login successful"}, status=status.HTTP_200_OK)
             response = EmotreeAuthClass().set_jwt_auth_cookie(response=response, jwt_tokens=jwt_tokens)
             return response
 
