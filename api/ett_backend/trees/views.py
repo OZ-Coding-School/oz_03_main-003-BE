@@ -56,6 +56,7 @@ class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = TreeUpdateSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'tree_uuid'
+    queryset = TreeDetail.objects.all()
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
