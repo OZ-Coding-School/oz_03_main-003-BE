@@ -1,12 +1,13 @@
+import uuid
+
+from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
-from django.urls import reverse
-import uuid
-from rest_framework import status
 
 
 class TreeCreateTest(APITestCase):
@@ -21,24 +22,21 @@ class TreeCreateTest(APITestCase):
             social_platform="google",
             is_active=True,
         )
-        self.forest = Forest.objects.create(
-            user=self.user,
-            forest_uuid=uuid.uuid4(),
-            forest_level=123
-        )
+        self.forest = Forest.objects.create(user=self.user, forest_uuid=uuid.uuid4(), forest_level=123)
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse("tree_list_create_view")
+        self.create_url = reverse("tree_create_view")
+        self.lr_url = reverse("tree_list_retrieve_view")
 
     def test_tree_list(self):
         # When
         for i in range(9):
-            self.client.post(self.url)
+            self.client.post(self.create_url)
 
-        response = self.client.get(self.url)
+        response = self.client.get(self.lr_url)
 
         # Then
         print("#" * 20)
@@ -50,10 +48,9 @@ class TreeCreateTest(APITestCase):
 
     def test_tree_query_params(self):
         # When
-        self.client.post(self.url)
-        self.client.get(self.url)
+        self.client.post(self.create_url)
         tree_uuid = TreeDetail.objects.select_related("forest").get(forest=self.forest).tree_uuid
-        response = self.client.get(self.url, data={"tree_uuid": tree_uuid})
+        response = self.client.get(self.lr_url, data={"tree_uuid": tree_uuid})
 
         # Then
         print("#" * 20)

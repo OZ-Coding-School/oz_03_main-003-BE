@@ -1,12 +1,12 @@
-from rest_framework.test import APITestCase, APIClient
-
 import uuid
 
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from forest.models import Forest
 from users.models import User
-from rest_framework import status
 
 
 class ForestCreateTest(APITestCase):

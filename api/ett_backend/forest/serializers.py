@@ -1,10 +1,9 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from forest.models import Forest
 from users.models import User
-
-from django.shortcuts import get_object_or_404
 
 
 class ForestCreateSerializer(serializers.ModelSerializer):
@@ -33,10 +32,10 @@ class ForestCreateSerializer(serializers.ModelSerializer):
 class ForestRetreiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Forest
-        fields = ['forest_uuid', 'forest_level']
+        fields = ["forest_uuid", "forest_level"]
 
 
-class ForestUpdateDeleteSerializer(serializers.ModelSerializer):
+class ForestUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         if "forest_level" in attrs and attrs["forest_level"] < 0:
@@ -44,13 +43,13 @@ class ForestUpdateDeleteSerializer(serializers.ModelSerializer):
         return attrs
 
     def update(self, instance, validated_data):
-        instance.forest_level = validated_data.get('forest_level', instance.forest_level)
+        instance.forest_level = validated_data.get("forest_level", instance.forest_level)
         instance.save()
         return instance
 
     class Meta:
         model = Forest
-        fields = ['forest_level']
+        fields = ["forest_level"]
         extra_kwargs = {
-            'tree_level': {'required': True},
+            "forest_level": {"required": True},
         }

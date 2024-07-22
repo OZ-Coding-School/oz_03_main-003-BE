@@ -1,32 +1,27 @@
-from trees.models import TreeEmotion, TreeDetail
 from rest_framework import serializers
+
+from trees.models import TreeDetail, TreeEmotion
 
 
 class TreeEmotionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreeEmotion
-        fields = ['happiness', 'anger', 'sadness', 'worry', 'indifference']
+        fields = ["happiness", "anger", "sadness", "worry", "indifference"]
 
 
 class FilteredTreeEmotionSerializer(serializers.ModelSerializer):
-    tree_uuid = serializers.UUIDField(source='tree.tree_uuid')
+    tree_uuid = serializers.UUIDField(source="tree.tree_uuid")
     emotions = serializers.SerializerMethodField()
 
     class Meta:
         model = TreeEmotion
-        fields = ['tree_uuid', 'emotions']
+        fields = ["tree_uuid", "emotions"]
 
     def get_emotions(self, obj):
-        request = self.context.get('request')
-        detail_sentiments = request.query_params.getlist('detail_sentiment')
+        request = self.context.get("request")
+        detail_sentiments = request.query_params.getlist("detail_sentiment")
 
-        emotions = {
-            'h': 'happiness',
-            'a': 'anger',
-            's': 'sadness',
-            'w': 'worry',
-            'i': 'indifference'
-        }
+        emotions = {"h": "happiness", "a": "anger", "s": "sadness", "w": "worry", "i": "indifference"}
 
         filtered_emotions = {}
         for key in detail_sentiments:
@@ -41,7 +36,7 @@ class FilteredTreeEmotionSerializer(serializers.ModelSerializer):
 class TreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreeDetail
-        fields = ['tree_uuid', 'tree_name', 'tree_level', 'location']
+        fields = ["tree_uuid", "tree_name", "tree_level", "location"]
 
 
 class TreeUpdateSerializer(serializers.ModelSerializer):
@@ -55,18 +50,18 @@ class TreeUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TreeDetail
-        fields = ['tree_name', 'tree_level', 'location']
+        fields = ["tree_name", "tree_level", "location"]
         extra_kwargs = {
-            'tree_name': {'required': False},
-            'tree_level': {'required': False},
-            'location': {'required': False},
+            "tree_name": {"required": False},
+            "tree_level": {"required": False},
+            "location": {"required": False},
         }
 
 
 class TreeEmotionListSerializer(serializers.ModelSerializer):
-    tree_uuid = serializers.UUIDField(source='tree.tree_uuid')
-    emotions = TreeEmotionSerializer(source='*')
+    tree_uuid = serializers.UUIDField(source="tree.tree_uuid")
+    emotions = TreeEmotionSerializer(source="*")
 
     class Meta:
         model = TreeEmotion
-        fields = ['tree_uuid', 'emotions']
+        fields = ["tree_uuid", "emotions"]

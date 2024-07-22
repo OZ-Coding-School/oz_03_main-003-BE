@@ -1,12 +1,14 @@
+import uuid
+
+from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
-from django.urls import reverse
-import uuid
-from rest_framework import status
+
 
 class GetTreeEmotionTest(APITestCase):
 
@@ -19,15 +21,11 @@ class GetTreeEmotionTest(APITestCase):
             social_platform="google",
             is_active=True,
         )
-        self.forest = Forest.objects.create(
-            user=self.user,
-            forest_uuid=uuid.uuid4(),
-            forest_level=123
-        )
+        self.forest = Forest.objects.create(user=self.user, forest_uuid=uuid.uuid4(), forest_level=123)
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
-        self.create_url = reverse("tree_list_create_view")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + self.access_token)
+        self.create_url = reverse("tree_create_view")
         self.emotion_url = reverse("tree_emotion_view")
 
     def test_get_tree_emotion_data(self):
@@ -55,10 +53,7 @@ class GetTreeEmotionTest(APITestCase):
 
         forest = Forest.objects.prefetch_related("related_tree").filter(user=self.user).first()
         if forest:
-            response = self.client.get(
-                self.emotion_url,
-                data={"detail_sentiment": ['a', 'w']}
-            )
+            response = self.client.get(self.emotion_url, data={"detail_sentiment": ["a", "w"]})
 
             print("#" * 20)
             print("Test 2")
@@ -70,10 +65,7 @@ class GetTreeEmotionTest(APITestCase):
     def test_get_tree_emotion_with_tree_uuid(self):
         self.client.post(self.create_url)
         tree_uuid = TreeDetail.objects.select_related("forest").get(forest=self.forest).tree_uuid
-        response = self.client.get(
-            self.emotion_url,
-            data={"tree_uuid": tree_uuid, "detail_sentiment": ['a', 'w']}
-        )
+        response = self.client.get(self.emotion_url, data={"tree_uuid": tree_uuid, "detail_sentiment": ["a", "w"]})
 
         print("#" * 20)
         print("Test 3")

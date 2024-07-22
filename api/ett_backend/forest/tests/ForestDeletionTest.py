@@ -1,12 +1,13 @@
+import uuid
+
+from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from forest.models import Forest
 from users.models import User
-from django.urls import reverse
-from rest_framework import status
 
-import uuid
 
 class ForestDeletionTest(APITestCase):
 
@@ -20,19 +21,14 @@ class ForestDeletionTest(APITestCase):
             is_active=True,
         )
 
-        self.forest = Forest.objects.create(
-            user=self.user,
-            forest_uuid=uuid.uuid4(),
-            forest_level=123
-        )
+        self.forest = Forest.objects.create(user=self.user, forest_uuid=uuid.uuid4(), forest_level=123)
 
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.delete_url = reverse("forest_update_delete", kwargs={'forest_uuid': self.forest.forest_uuid})
-
+        self.delete_url = reverse("forest_update_delete", kwargs={"forest_uuid": self.forest.forest_uuid})
 
     def test_forest_delete(self):
         # When

@@ -2,7 +2,9 @@ import uuid
 
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from chatroom.models import ChatRoom
 from users.models import User
@@ -20,26 +22,28 @@ class ChatRoomCreateTest(TestCase):
             is_active=True,
             is_superuser=False,
         )
+        self.refresh_token = RefreshToken.for_user(self.user)
+        self.access_token = str(self.refresh_token.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
 
     def test_create_chat_room(self):
-        self.client.post(
+        response = self.client.post(
             path=reverse("create_chat_room"),
             data={
-                "user_uuid": self.user.uuid,
                 "chat_room_name": "test",
                 "analyze_target_name": "test target",
                 "analyze_target_relation": "test relation",
             },
             format="json",
         )
+
+        print("#" * 20)
+        print(response.data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ChatRoom.objects.count(), 1)
 
         chat_room = ChatRoom.objects.get(user=self.user)
         self.assertEqual(chat_room.chat_room_name, "test")
         self.assertEqual(chat_room.analyze_target_name, "test target")
         self.assertEqual(chat_room.analyze_target_relation, "test relation")
-
-        print(chat_room.chat_room_uuid)
-        print(chat_room.chat_room_name)
-        print(chat_room.analyze_target_name)
-        print(chat_room.analyze_target_relation)
