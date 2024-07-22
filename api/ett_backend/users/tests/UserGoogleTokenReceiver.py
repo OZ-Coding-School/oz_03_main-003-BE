@@ -27,7 +27,7 @@ class UserGoogleTokenReceiverTest(APITestCase):
         print(response.data)
 
         # Verify response status
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Verify Cookies are set
         self.assertIn("access", response.cookies)

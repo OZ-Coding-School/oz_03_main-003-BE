@@ -39,13 +39,28 @@ class FilteredTreeEmotionSerializer(serializers.ModelSerializer):
 
 
 class TreeSerializer(serializers.ModelSerializer):
-    emotions = TreeEmotionSerializer(source='treeemotion') # TreeEmotion도 포함해서 응답을 나타내기 위해 설정
-    # 즉, TreeDetail 모델에서 TreeEmotion 모델을 참조한다.
-    # source='treeemotion'는 TreeDetail의 treeemotion 필드를 역참조 하게 된다. (FK가 TreeEmotion에 걸려 있으니까)
+    class Meta:
+        model = TreeDetail
+        fields = ['tree_uuid', 'tree_name', 'tree_level', 'location']
+
+
+class TreeUpdateSerializer(serializers.ModelSerializer):
+
+    def validate(self, attrs):
+        if "tree_level" in attrs and attrs["tree_level"] < 0:
+            raise serializers.ValidationError("tree_level must be greater than or equal to 0")
+        if "location" in attrs and attrs["location"] < 0:
+            raise serializers.ValidationError("location must be greater than or equal to 0")
+        return attrs
 
     class Meta:
         model = TreeDetail
-        fields = ['tree_uuid', 'tree_name', 'tree_level', 'location', 'emotions']
+        fields = ['tree_name', 'tree_level', 'location']
+        extra_kwargs = {
+            'tree_name': {'required': False},
+            'tree_level': {'required': False},
+            'location': {'required': False},
+        }
 
 
 class TreeEmotionListSerializer(serializers.ModelSerializer):

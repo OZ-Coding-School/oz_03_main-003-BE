@@ -7,6 +7,8 @@ from users.models import User
 from django.urls import reverse
 import uuid
 from rest_framework import status
+
+
 class TreeCreateTest(APITestCase):
 
     def setUp(self):
@@ -49,6 +51,7 @@ class TreeCreateTest(APITestCase):
     def test_tree_query_params(self):
         # When
         self.client.post(self.url)
+        self.client.get(self.url)
         tree_uuid = TreeDetail.objects.select_related("forest").get(forest=self.forest).tree_uuid
         response = self.client.get(self.url, data={"tree_uuid": tree_uuid})
 
@@ -58,4 +61,3 @@ class TreeCreateTest(APITestCase):
         print(response.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-

@@ -19,12 +19,14 @@ class ChatRoomCreateView(GenericAPIView):
     serializer_class = ChatRoomCreateSerializer
 
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        user = request.user
+        serializer = self.get_serializer(data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        chat_room = serializer.save()
 
         return Response(
-            data={"chat_room_uuid": serializer.validated_data["chat_room_uuid"]}, status=status.HTTP_201_CREATED
+            data={"chat_room_uuid": serializer.validated_data["chat_room_uuid"]},
+            status=status.HTTP_201_CREATED
         )
 
 
