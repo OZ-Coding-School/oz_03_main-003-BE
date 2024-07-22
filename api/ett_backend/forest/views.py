@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView, RetrieveAPIView
 
 from forest.models import Forest
-from users.models import User
 from forest.serializers import ForestCreateSerializer, ForestRetreiveSerializer, ForestDeleteSerializer
 
 
@@ -38,6 +37,7 @@ class ForestReceiveView(RetrieveAPIView):
         serializer = ForestRetreiveSerializer(forest)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 class ForestDeleteView(GenericAPIView):
     serializer_class = ForestDeleteSerializer
     permission_classes = [IsAuthenticated]
@@ -53,31 +53,5 @@ class ForestDeleteView(GenericAPIView):
         except Forest.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-
-# class ForestRetrieveView(APIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def get(self, request, uuid):
-#         # 사용자의 Forest 조회 (RetrieveForest)
-#         try:
-#             forest = Forest.objects.get(user__uuid=uuid)
-#             serializer = ForestSerializer(forest)
-#             return Response(serializer.data, status=status.HTTP_200_OK)
-#         except Forest.DoesNotExist:
-#             return Response({"message": "Forest Not Found"}, status=status.HTTP_404_NOT_FOUND)
-#
-#
-# class ForestDeleteView(APIView):
-#     permission_classes = [IsAuthenticated]
-#
-#     def delete(self, request):
-#         # Forest 삭제 (DeleteForest)
-#         data = request.data
-#         forest_uuid = data.get("forest_uuid")
-#
-#         try:
-#             forest = Forest.objects.get(forest_uuid=forest_uuid)
-#             forest.delete()
-#             return Response({"message": "Successfully Deleted Forest"}, status=status.HTTP_204_NO_CONTENT)
-#         except Forest.DoesNotExist:
-#             return Response({"message": "Forest not found"}, status=status.HTTP_404_NOT_FOUND)
+class ForestLevelUpdateView(GenericAPIView):
+    pass
