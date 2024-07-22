@@ -15,14 +15,14 @@ class ForestDeletionTest(APITestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
-            uuid=uuid.uuid4().hex,
+            uuid=uuid.uuid4(),
             social_platform="google",
             is_active=True,
         )
 
         self.forest = Forest.objects.create(
             user=self.user,
-            forest_uuid=uuid.uuid4().hex,
+            forest_uuid=uuid.uuid4(),
             forest_level=123
         )
 
@@ -31,11 +31,13 @@ class ForestDeletionTest(APITestCase):
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse("forest_delete")
+        self.delete_url = reverse("forest_update_delete", kwargs={'forest_uuid': self.forest.forest_uuid})
+
 
     def test_forest_delete(self):
         # When
-        response = self.client.delete(path=self.url, data={"forest_uuid": self.forest.forest_uuid})
+        print(self.forest.forest_uuid)
+        response = self.client.delete(path=self.delete_url)
 
         # Then
         self.assertEqual(Forest.objects.count(), 0)

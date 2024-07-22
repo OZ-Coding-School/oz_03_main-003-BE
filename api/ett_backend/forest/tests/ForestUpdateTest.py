@@ -1,7 +1,4 @@
 from rest_framework.test import APIClient, APITestCase
-
-import uuid
-
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from forest.models import Forest
@@ -9,8 +6,9 @@ from users.models import User
 from django.urls import reverse
 from rest_framework import status
 
+import uuid
 
-class ForestReceiveTest(APITestCase):
+class ForestUpdateTest(APITestCase):
 
     def setUp(self):
         self.client = APIClient()
@@ -33,13 +31,27 @@ class ForestReceiveTest(APITestCase):
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse("forest_receive")
+        self.update_url = reverse("forest_update_delete", kwargs={'forest_uuid': self.forest.forest_uuid})
 
-    def test_forest_receive(self):
+
+    def test_forest_update(self):
         # When
-        response = self.client.get(path=self.url)
-        print(response.data)
+        data = {
+            "forest_level": 456
+        }
+        response = self.client.put(path=self.update_url, data=data, format="json")
 
         # Then
-        self.assertEqual(response.data["forest_uuid"], str(self.forest.forest_uuid))
+        self.assertEqual(Forest.objects.count(), 1)
+        self.assertEqual(Forest.objects.filter(forest_level=456).count(), 1)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forest_update_fail(self):
+        # When
+        data = {
+            "forest_level": -456
+        }
+        response = self.client.put(path=self.update_url, data=data, format="json")
+
+        # Then
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
