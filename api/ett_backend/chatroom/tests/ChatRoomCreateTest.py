@@ -12,7 +12,7 @@ class ChatRoomCreateTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create(
-            uuid=uuid.uuid4().hex,
+            uuid=uuid.uuid4(),
             username="test",
             email="test@test.com",
             profile_image="test",

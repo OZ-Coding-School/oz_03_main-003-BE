@@ -11,14 +11,17 @@ class ForestCreateSerializer(serializers.ModelSerializer):
     user_uuid = serializers.UUIDField()
 
     def validate(self, attrs):
-        user = get_object_or_404(User, uuid=attrs["user_uuid"])
+        user_uuid = attrs["user_uuid"]
+        user = get_object_or_404(User, uuid=user_uuid)
         attrs["user"] = user
+        if Forest.objects.filter(user=user).exists():
+            raise serializers.ValidationError("User already has a forest")
         return attrs
 
     def create(self, validated_data):
         with transaction.atomic():
             forest = Forest.objects.create(
-                user = validated_data["user"],
+                user=validated_data["user"],
             )
         return forest
 
@@ -33,12 +36,21 @@ class ForestRetreiveSerializer(serializers.ModelSerializer):
         fields = ['forest_uuid', 'forest_level']
 
 
-class ForestDeleteSerializer(serializers.Serializer):
-    forest_uuid = serializers.UUIDField(write_only=True)
+class ForestUpdateDeleteSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
-        forest = get_object_or_404(Forest, forest_uuid=attrs["forest_uuid"])
-        attrs["forest"] = forest
+        if "forest_level" in attrs and attrs["forest_level"] < 0:
+            raise serializers.ValidationError("forest_level must be greater than or equal to 0")
         return attrs
 
+    def update(self, instance, validated_data):
+        instance.forest_level = validated_data.get('forest_level', instance.forest_level)
+        instance.save()
+        return instance
 
+    class Meta:
+        model = Forest
+        fields = ['forest_level']
+        extra_kwargs = {
+            'tree_level': {'required': True},
+        }
