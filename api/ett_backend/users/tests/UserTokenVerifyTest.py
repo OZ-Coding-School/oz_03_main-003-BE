@@ -15,7 +15,7 @@ class UserTokenVerifyTest(APITestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
-            uuid=uuid.uuid4().hex,
+            uuid=uuid.uuid4(),
             social_platform="google",
             is_active=True,
         )

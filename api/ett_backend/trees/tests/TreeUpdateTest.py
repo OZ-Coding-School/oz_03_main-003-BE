@@ -14,20 +14,20 @@ class TreeUpdateViewTest(APITestCase):
         self.user = User.objects.create_user(
             username="testuser",
             email="testuser@example.com",
-            uuid=uuid.uuid4().hex,
+            uuid=uuid.uuid4(),
             social_platform="google",
             is_active=True,
         )
         self.forest = Forest.objects.create(
             user=self.user,
-            forest_uuid=uuid.uuid4().hex,
+            forest_uuid=uuid.uuid4(),
             forest_level=123
         )
         self.tree = TreeDetail.objects.create(
             forest=self.forest,
             tree_name="My tree",
             location=0,
-            tree_uuid=uuid.uuid4().hex
+            tree_uuid=uuid.uuid4()
         )
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
