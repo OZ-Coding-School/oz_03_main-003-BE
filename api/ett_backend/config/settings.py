@@ -29,6 +29,7 @@ DEBUG = os.getenv("DJANGO_DEBUG")
 
 ALLOWED_HOSTS: list = os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",")
 
+APPEND_SLASH = True
 
 # Application definition
 

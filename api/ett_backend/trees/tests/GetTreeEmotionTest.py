@@ -8,11 +8,9 @@ from django.urls import reverse
 import uuid
 from rest_framework import status
 
-
 class GetTreeEmotionTest(APITestCase):
 
     def setUp(self):
-        # Given
         self.client = APIClient()
         self.user = User.objects.create_user(
             username="testuser",
@@ -33,7 +31,6 @@ class GetTreeEmotionTest(APITestCase):
         self.emotion_url = reverse("tree_emotion_view")
 
     def test_get_tree_emotion_data(self):
-        # When
         for i in range(9):
             self.client.post(self.create_url)
         self.assertEqual(TreeDetail.objects.count(), 9)
@@ -43,7 +40,6 @@ class GetTreeEmotionTest(APITestCase):
         if forest:
             response = self.client.get(self.emotion_url)
 
-            # Then
             print("#" * 20)
             print("Test 1")
             print(response.data)
@@ -52,7 +48,6 @@ class GetTreeEmotionTest(APITestCase):
             self.fail("No forest found for the user.")
 
     def test_get_tree_emotion_with_query_params(self):
-        # When
         for i in range(9):
             self.client.post(self.create_url)
         self.assertEqual(TreeDetail.objects.count(), 9)
@@ -65,16 +60,14 @@ class GetTreeEmotionTest(APITestCase):
                 data={"detail_sentiment": ['a', 'w']}
             )
 
-            # Then
             print("#" * 20)
-            print("Test 1")
+            print("Test 2")
             print(response.data)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
         else:
             self.fail("No forest found for the user.")
 
     def test_get_tree_emotion_with_tree_uuid(self):
-        # When
         self.client.post(self.create_url)
         tree_uuid = TreeDetail.objects.select_related("forest").get(forest=self.forest).tree_uuid
         response = self.client.get(
@@ -82,8 +75,7 @@ class GetTreeEmotionTest(APITestCase):
             data={"tree_uuid": tree_uuid, "detail_sentiment": ['a', 'w']}
         )
 
-        # Then
         print("#" * 20)
-        print("Test 2")
+        print("Test 3")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

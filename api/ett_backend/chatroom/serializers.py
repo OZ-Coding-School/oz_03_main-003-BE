@@ -1,5 +1,6 @@
 import uuid
 
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
@@ -8,31 +9,22 @@ from users.models import User
 
 
 class ChatRoomCreateSerializer(serializers.ModelSerializer):
-    user_uuid = serializers.UUIDField(write_only=True)
-    chat_room_name = serializers.CharField(write_only=True)
-    analyze_target_name = serializers.CharField(write_only=True)
-    analyze_target_relation = serializers.CharField(write_only=True)
-
-    def validate(self, attrs):
-        user = get_object_or_404(User, uuid=attrs["user_uuid"])
-        chat_room_uuid = uuid.uuid4().hex
-        attrs["user"] = user
-        attrs["chat_room_uuid"] = chat_room_uuid
-        return attrs
-
-    def create(self, validated_data):
-        chat_room = ChatRoom.objects.create(
-            user=validated_data["user"],
-            chat_room_uuid=validated_data["chat_room_uuid"],
-            chat_room_name=validated_data["chat_room_name"],
-            analyze_target_name=validated_data["analyze_target_name"],
-            analyze_target_relation=validated_data["analyze_target_relation"],
-        )
-        return chat_room
 
     class Meta:
         model = ChatRoom
-        fields = ["user_uuid", "chat_room_name", "analyze_target_name", "analyze_target_relation"]
+        fields = [
+            "chat_room_uuid",
+        ]
+
+    def create(self, validated_data):
+        chat_room_uuid = uuid.uuid4().hex
+        with transaction.atomic():
+            new_chatroom = ChatRoom.objects.create(
+                user=self.context["user"],
+                chat_room_uuid=chat_room_uuid,
+                **validated_data
+            )
+        return new_chatroom
 
 
 class ChatRoomListSerializer(serializers.Serializer):
