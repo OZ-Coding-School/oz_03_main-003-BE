@@ -22,7 +22,22 @@ class AIDialog(TimeStampModel):
 
     message_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     message = models.TextField(null=True)
-    sentiments = models.TextField(null=True)
+    applied_state = models.BooleanField(
+        default=False
+    )  # 해당 AI 답변이 Tree에 반영되었는지 True : 반영됨, False : 반영되지 않음
 
     class Meta:
         db_table = "ai_dialog"
+
+
+class AIEmotionalAnalysis(TimeStampModel):
+    ai_dialog = models.OneToOneField(AIDialog, on_delete=models.CASCADE)
+
+    happiness = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 행복도
+    anger = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 화남
+    sadness = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 슬픔
+    worry = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 걱정
+    indifference = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 무관심
+
+    class Meta:
+        db_table = "ai_emotional_analysis"

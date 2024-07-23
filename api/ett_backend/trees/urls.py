@@ -1,12 +1,6 @@
 from django.urls import path
 
-from trees.views import (
-    TreeCreateView,
-    TreeEmotionListView,
-    TreeListView,
-    TreeUpdateDeleteView,
-    TreeEmotionRetrieveView
-)
+from trees.views import TreeCreateView, TreeEmotionListView, TreeEmotionRetrieveView, TreeListView, TreeUpdateDeleteView
 
 urlpatterns = [
     path("new", TreeCreateView.as_view(), name="tree_create_view"),

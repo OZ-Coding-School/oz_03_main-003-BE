@@ -48,7 +48,6 @@ class GetTreeEmotionTest(APITestCase):
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
     def test_get_tree_emotion_list_with_query_params(self):
         for i in range(9):
             self.client.post(self.create_url)
@@ -66,14 +65,12 @@ class GetTreeEmotionTest(APITestCase):
         else:
             self.fail("No forest found for the user.")
 
-
     def test_get_tree_emotion_retrieve(self):
         response = self.client.post(self.create_url)
         self.assertEqual(TreeDetail.objects.count(), 1)
         self.assertEqual(TreeEmotion.objects.count(), 1)
         self.emotion_retrieve_url = reverse(
-            "tree_emotion_retrieve_view",
-            kwargs={"tree_uuid": response.data["tree_uuid"]}
+            "tree_emotion_retrieve_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
         )
         response = self.client.get(self.emotion_retrieve_url)
 
@@ -82,14 +79,12 @@ class GetTreeEmotionTest(APITestCase):
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
     def test_get_tree_emotion_retrieve_with_query_params(self):
         response = self.client.post(self.create_url)
         self.assertEqual(TreeDetail.objects.count(), 1)
         self.assertEqual(TreeEmotion.objects.count(), 1)
         self.emotion_retrieve_url = reverse(
-            "tree_emotion_retrieve_view",
-            kwargs={"tree_uuid": response.data["tree_uuid"]}
+            "tree_emotion_retrieve_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
         )
         response = self.client.get(self.emotion_retrieve_url, data={"detail_sentiment": ["h", "s"]})
 
