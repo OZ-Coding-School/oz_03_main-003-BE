@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -12,6 +12,7 @@ from trees.serializers import (
     TreeEmotionListSerializer,
     TreeSerializer,
     TreeUpdateSerializer,
+    TreeEmotionSerializer,
 )
 from users.serializers import EmptySerializer
 
@@ -90,21 +91,6 @@ class TreeEmotionListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        tree_uuid = request.query_params.get("tree_uuid")
-
-        # tree_uuid를 제공한 경우
-        if tree_uuid:
-            tree_emotion = TreeEmotion.objects.select_related("tree").filter(tree__tree_uuid=tree_uuid).first()
-            if not tree_emotion:
-                return Response(data=[], status=status.HTTP_404_NOT_FOUND)
-
-            if request.query_params.get("detail_sentiment"):
-                serializer = FilteredTreeEmotionSerializer(tree_emotion, context={"request": request})
-            else:
-                serializer = self.get_serializer(data=tree_emotion)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        # tree_uuid를 제공하지 않은 경우
         # User에 해당하고 Forest에 관련된 TreeDetail 객체를 역참조로 미리 가져온다. (쿼리 2개 발생)
         forest = Forest.objects.prefetch_related("related_tree").filter(user=user).first()
         if not forest:
@@ -125,4 +111,23 @@ class TreeEmotionListView(ListAPIView):
             serializer = FilteredTreeEmotionSerializer(tree_emotions, many=True, context={"request": request})
         else:
             serializer = TreeEmotionListSerializer(tree_emotions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TreeEmotionRetrieveView(RetrieveAPIView):
+    serializer_class = TreeEmotionSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = "tree_uuid"
+    queryset = TreeEmotion.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree_emotion = TreeEmotion.objects.select_related("tree").filter(tree__tree_uuid=tree_uuid).first()
+        if not tree_emotion:
+            return Response(data=[], status=status.HTTP_404_NOT_FOUND)
+
+        if request.query_params.get("detail_sentiment"):
+            serializer = FilteredTreeEmotionSerializer(tree_emotion, context={"request": request})
+        else:
+            serializer = TreeEmotionListSerializer(tree_emotion)
         return Response(serializer.data, status=status.HTTP_200_OK)
