@@ -45,6 +45,25 @@ class GetTreeEmotionTest(APITestCase):
         else:
             self.fail("No forest found for the user.")
 
+
+    def test_get_tree_emotion_without_query_params(self):
+        for i in range(9):
+            self.client.post(self.create_url)
+        self.assertEqual(TreeDetail.objects.count(), 9)
+        self.assertEqual(TreeEmotion.objects.count(), 9)
+
+        forest = Forest.objects.prefetch_related("related_tree").filter(user=self.user).first()
+        if forest:
+            response = self.client.get(self.emotion_url)
+
+            print("#" * 20)
+            print("Test 2")
+            print(response.data)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        else:
+            self.fail("No forest found for the user.")
+
+
     def test_get_tree_emotion_with_query_params(self):
         for i in range(9):
             self.client.post(self.create_url)
@@ -56,11 +75,12 @@ class GetTreeEmotionTest(APITestCase):
             response = self.client.get(self.emotion_url, data={"detail_sentiment": ["a", "w"]})
 
             print("#" * 20)
-            print("Test 2")
+            print("Test 3")
             print(response.data)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
         else:
             self.fail("No forest found for the user.")
+
 
     def test_get_tree_emotion_with_tree_uuid(self):
         self.client.post(self.create_url)
@@ -68,15 +88,16 @@ class GetTreeEmotionTest(APITestCase):
         response = self.client.get(self.emotion_url, data={"tree_uuid": tree_uuid, "detail_sentiment": ["a", "w"]})
 
         print("#" * 20)
-        print("Test 3")
+        print("Test 4")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
     def test_there_is_no_tree(self):
         tree_uuid = uuid.uuid4() # Fake uuid
         response = self.client.get(self.emotion_url, data={"tree_uuid": tree_uuid, "detail_sentiment": ["a", "w"]})
 
         print("#" * 20)
-        print("Test 4")
+        print("Test 5")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
