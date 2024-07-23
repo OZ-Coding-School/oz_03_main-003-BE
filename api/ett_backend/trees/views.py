@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -10,9 +10,9 @@ from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
     FilteredTreeEmotionSerializer,
     TreeEmotionListSerializer,
+    TreeEmotionSerializer,
     TreeSerializer,
     TreeUpdateSerializer,
-    TreeEmotionSerializer,
 )
 from users.serializers import EmptySerializer
 
@@ -100,7 +100,7 @@ class TreeEmotionListView(ListAPIView):
         if not tree_details.exists():
             return Response(data=[], status=status.HTTP_200_OK)
 
-        # TreeEmotion에서 정방향 참조하여 TreeDetails에 해당하는 데이터만 가져온다
+        # TreeEmotion에서 정방향 참조하여 tree_details에 해당하는 데이터만 가져온다
         tree_emotions = TreeEmotion.objects.filter(tree__in=tree_details).select_related("tree")
 
         # 만약 query param으로 detail_sentiment값이 들어왔다면
