@@ -31,7 +31,6 @@ class TreeDeletionTest(APITestCase):
         response = self.client.post(path=reverse("tree_create_view"))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         tree_uuid = response.data["tree_uuid"]
-        print(tree_uuid)
 
         response = self.client.delete(path=reverse("tree_update_delete_view", kwargs={"tree_uuid": tree_uuid}))
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -44,9 +43,10 @@ class TreeDeletionTest(APITestCase):
         invalid_uuid = "asdf-ghjk-qwer"
 
         try:
-            self.update_delete_url = reverse("tree_update_delete_view", kwargs={"tree_uuid": invalid_uuid})
+            response = self.client.delete(path=reverse("tree_update_delete_view", kwargs={"tree_uuid": invalid_uuid}))
             self.assertEqual(1, 2)
         except NoReverseMatch:
+            print(response.status_code)
             self.assertEqual(1, 1)
 
         response = self.client.delete(path=reverse("tree_update_delete_view", kwargs={"tree_uuid": tree_uuid}))

@@ -1,12 +1,8 @@
 from django.urls import path
 
-from dialog.views import AIMessageRetrieveView, UserMessageListView, UserMessagePostView, UserMessageRetrieveView
-
-from . import views
+from dialog.views import AIMessageRetrieveView, UserMessageCreateView
 
 urlpatterns = [
-    path("messages/list", UserMessageListView.as_view(), name="get_user_message_list"),
-    path("messages/ai", AIMessageRetrieveView.as_view(), name="get_ai_generate_response"),
-    path("messages/user", UserMessageRetrieveView.as_view(), name="get_user_message"),
-    path("send", UserMessagePostView.as_view(), name="user-message-send"),
+    path("send", UserMessageCreateView.as_view(), name="send_user_message"),
+    path("message/ai/<uuid:chat_room_uuid>", AIMessageRetrieveView.as_view(), name="retrieve_ai_message"),
 ]

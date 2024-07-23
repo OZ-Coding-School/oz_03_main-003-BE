@@ -71,3 +71,12 @@ class GetTreeEmotionTest(APITestCase):
         print("Test 3")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_there_is_no_tree(self):
+        tree_uuid = uuid.uuid4() # Fake uuid
+        response = self.client.get(self.emotion_url, data={"tree_uuid": tree_uuid, "detail_sentiment": ["a", "w"]})
+
+        print("#" * 20)
+        print("Test 4")
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
