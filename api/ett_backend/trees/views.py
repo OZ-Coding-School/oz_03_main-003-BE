@@ -77,7 +77,9 @@ class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         tree_uuid = kwargs.get(self.lookup_field)
-        tree = get_object_or_404(TreeDetail, tree_uuid=tree_uuid, forest__user=request.user)
+        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
+        if not tree:
+            return Response(status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -90,21 +92,28 @@ class TreeEmotionListView(ListAPIView):
         user = request.user
         tree_uuid = request.query_params.get("tree_uuid")
 
+        # tree_uuid를 제공한 경우
         if tree_uuid:
-            tree_emotion = get_object_or_404(TreeEmotion.objects.select_related("tree"), tree__tree_uuid=tree_uuid)
+            tree_emotion = TreeEmotion.objects.select_related("tree").filter(tree__tree_uuid=tree_uuid).first()
+            if not tree_emotion:
+                return Response(data=[], status=status.HTTP_404_NOT_FOUND)
+
             if request.query_params.get("detail_sentiment"):
                 serializer = FilteredTreeEmotionSerializer(tree_emotion, context={"request": request})
             else:
-                serializer = TreeEmotionListSerializer(tree_emotion)
+                serializer = self.get_serializer(data=tree_emotion)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         # tree_uuid를 제공하지 않은 경우
         # User에 해당하고 Forest에 관련된 TreeDetail 객체를 역참조로 미리 가져온다. (쿼리 2개 발생)
-        forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
+        forest = Forest.objects.prefetch_related("related_tree").filter(user=user).first()
+        if not forest:
+            return Response(data=[], status=status.HTTP_404_NOT_FOUND)
+
         tree_details = forest.related_tree.all()  # 전체 tree 데이터를 가져온다
         if not tree_details.exists():
             # 쿼리에 해당하는 Tree가 전혀 존재하지 않다면
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(data=[], status=status.HTTP_404_NOT_FOUND)
 
         # TreeDetail 객체에 해당하는 TreeEmotion 객체들을 가져온다
         tree_emotions = TreeEmotion.objects.filter(tree__in=tree_details).select_related("tree")
