@@ -91,26 +91,24 @@ class TreeEmotionListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        # User에 해당하고 Forest에 관련된 TreeDetail 객체를 역참조로 미리 가져온다. (쿼리 2개 발생)
-        forest = Forest.objects.prefetch_related("related_tree").filter(user=user).first()
-        if not forest:
-            return Response(data=[], status=status.HTTP_404_NOT_FOUND)
 
-        tree_details = forest.related_tree.all()  # 전체 tree 데이터를 가져온다
+        # User가 소유한 Forest 데이터를 가져온다
+        forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
+        tree_details = forest.related_tree.all()
+
+        # Forest에 tree가 존재하지 않는 경우 -> json 응답으로 빈 배열 반환
         if not tree_details.exists():
-            # 쿼리에 해당하는 Tree가 전혀 존재하지 않다면
-            return Response(data=[], status=status.HTTP_404_NOT_FOUND)
+            return Response(data=[], status=status.HTTP_200_OK)
 
-        # TreeDetail 객체에 해당하는 TreeEmotion 객체들을 가져온다
+        # TreeEmotion에서 정방향 참조하여 TreeDetails에 해당하는 데이터만 가져온다
         tree_emotions = TreeEmotion.objects.filter(tree__in=tree_details).select_related("tree")
-        if not tree_emotions.exists():
-            # 해당 Tree에 감정 데이터가 존재하지 않는 경우
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if request.query_params.get("detail_sentiment"):  # detail_sentiment query_param이 존재하는 경우
+        # 만약 query param으로 detail_sentiment값이 들어왔다면
+        if request.query_params.get("detail_sentiment"):
             serializer = FilteredTreeEmotionSerializer(tree_emotions, many=True, context={"request": request})
         else:
             serializer = TreeEmotionListSerializer(tree_emotions, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

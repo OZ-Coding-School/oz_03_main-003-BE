@@ -34,16 +34,19 @@ class GetTreeEmotionTest(APITestCase):
         self.assertEqual(TreeDetail.objects.count(), 9)
         self.assertEqual(TreeEmotion.objects.count(), 9)
 
-        forest = Forest.objects.prefetch_related("related_tree").filter(user=self.user).first()
-        if forest:
-            response = self.client.get(self.emotion_list_url)
+        response = self.client.get(self.emotion_list_url)
 
-            print("#" * 20)
-            print("Test 1")
-            print(response.data)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-        else:
-            self.fail("No forest found for the user.")
+        print("#" * 50)
+        print("Test 1-1")
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_treedata_if_there_is_no_tree(self):
+        response = self.client.get(self.emotion_list_url)
+        print("#" * 50)
+        print("Test 1-2")
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
     def test_get_tree_emotion_list_with_query_params(self):
@@ -90,16 +93,14 @@ class GetTreeEmotionTest(APITestCase):
         )
         response = self.client.get(self.emotion_retrieve_url, data={"detail_sentiment": ["h", "s"]})
 
-        print("#" * 20)
-        print("Test 4")
+        print("#" * 50)
+        print("Test 4-1")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_there_is_no_tree(self):
-        tree_uuid = uuid.uuid4() # Fake uuid
-        response = self.client.get(self.emotion_list_url, data={"detail_sentiment": ["a", "w"]})
+        response = self.client.get(self.emotion_retrieve_url, data={"detail_sentiment": ["h", "s", "a", "w", "i"]})
 
-        print("#" * 20)
-        print("Test 5")
+        print("#" * 50)
+        print("Test 4-2")
         print(response.data)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
