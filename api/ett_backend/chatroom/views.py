@@ -39,9 +39,12 @@ class ChatRoomCreateView(CreateAPIView):
 class ChatRoomListView(ListAPIView):
     serializer_class = ChatRoomSerializer
     permission_classes = [IsAuthenticated]
+    queryset = ChatRoom.objects.all()
 
-    def get_queryset(self):
-        return ChatRoom.objects.filter(user=self.request.user)
+    def get(self, request, *args, **kwargs):
+        chat_rooms = ChatRoom.objects.filter(user=request.user)
+        serializer = ChatRoomSerializer(chat_rooms, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class ChatRoomRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):

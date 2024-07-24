@@ -18,9 +18,14 @@ class ChatRoomCreateSerializer(serializers.Serializer):
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
+    tree_uuid = serializers.SerializerMethodField()
+
+    def get_tree_uuid(self, obj):
+        return str(obj.tree.tree_uuid) if obj.tree else None
+
     class Meta:
         model = ChatRoom
-        fields = ["chat_room_uuid", "chat_room_name"]
+        fields = ["chat_room_uuid", "chat_room_name", "tree_uuid"]
 
 
 class ChatRoomUpdateSerializer(serializers.ModelSerializer):

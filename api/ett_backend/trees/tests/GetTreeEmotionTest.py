@@ -6,7 +6,7 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from chatroom.models import ChatRoom
-from dialog.models import UserDialog, AIEmotionalAnalysis, AIDialog
+from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
@@ -109,7 +109,9 @@ class GetTreeEmotionTest(APITestCase):
 
         tree = TreeDetail.objects.filter(tree_uuid=response.data.get("tree_uuid")).first()
         self.chat_room = ChatRoom.objects.create(user=self.user, tree=tree)
-        self.user_dialog = UserDialog.objects.create(user=self.user, chat_room=self.chat_room, message="test user message")
+        self.user_dialog = UserDialog.objects.create(
+            user=self.user, chat_room=self.chat_room, message="test user message"
+        )
         self.ai_dialog = AIDialog.objects.create(user_dialog=self.user_dialog, message="test message")
         self.ai_emotional_analysis = AIEmotionalAnalysis.objects.create(
             ai_dialog=self.ai_dialog, happiness=0.0, anger=0.0, sadness=0.0, worry=0.0, indifference=0.0
@@ -123,7 +125,7 @@ class GetTreeEmotionTest(APITestCase):
             data={
                 "chat_room_uuid": self.chat_room.chat_room_uuid,
                 "happiness": 11.0,
-            }
+            },
         )
         tree_emotion = TreeEmotion.objects.filter(tree=tree).first()
 
@@ -136,15 +138,13 @@ class GetTreeEmotionTest(APITestCase):
         self.assertEqual(self.ai_dialog.applied_state, True)
 
         # 동일한 내용으로 다시 시도하면 400 출력해야함
-        self.emotion_update_url = reverse(
-            "tree_emotion_retrieve_update_view", kwargs={"tree_uuid": tree.tree_uuid}
-        )
+        self.emotion_update_url = reverse("tree_emotion_retrieve_update_view", kwargs={"tree_uuid": tree.tree_uuid})
         response = self.client.patch(
             self.emotion_update_url,
             data={
                 "chat_room_uuid": self.chat_room.chat_room_uuid,
                 "happiness": 11.0,
-            }
+            },
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(self.ai_dialog.applied_state, False)

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
-from dialog.models import UserDialog, AIDialog
+from dialog.models import AIDialog, UserDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
@@ -145,23 +145,21 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
         chat_room = get_object_or_404(
             ChatRoom.objects.prefetch_related(
                 Prefetch(
-                    'user_dialog',
-                    queryset=UserDialog.objects.filter(user=request.user).prefetch_related(
-                        Prefetch('ai_dialog')
-                    )
+                    "user_dialog",
+                    queryset=UserDialog.objects.filter(user=request.user).prefetch_related(Prefetch("ai_dialog")),
                 )
             ),
             chat_room_uuid=chat_room_uuid,
-            user=request.user
+            user=request.user,
         )
 
         # user_dialog를 찾아봄
-        user_dialog = getattr(chat_room, 'user_dialog', None)
+        user_dialog = getattr(chat_room, "user_dialog", None)
         if not user_dialog or user_dialog.user != request.user:
             return Response(data={"message": "UserDialog not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # ai_dialog를 찾아봄
-        ai_dialog = getattr(user_dialog, 'ai_dialog', None)
+        ai_dialog = getattr(user_dialog, "ai_dialog", None)
         if not ai_dialog:
             return Response(data={"message": "AIDialog not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -170,9 +168,11 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
             return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
 
         # tree와 tree_emotion을 함께 찾아봄
-        tree_emotion = TreeEmotion.objects.select_related('tree').filter(
-            tree__tree_uuid=tree_uuid, tree__forest__user=request.user
-        ).first()
+        tree_emotion = (
+            TreeEmotion.objects.select_related("tree")
+            .filter(tree__tree_uuid=tree_uuid, tree__forest__user=request.user)
+            .first()
+        )
         if not tree_emotion:
             return Response(data={"message": "tree emotion not found"}, status=status.HTTP_404_NOT_FOUND)
 
