@@ -25,16 +25,14 @@ class UserMessageView(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)  # validate만 수행
         serializer.is_valid(raise_exception=True)
 
-        # 만약 해당 채팅방에서 이미 사용자 데이터를 전송했다면
-        if UserDialog.objects.filter(user=request.user, chat_room=chat_room).exists():
-            return Response(data={"message": "Already sent"}, status=status.HTTP_400_BAD_REQUEST)
-
         with transaction.atomic():
-            user_dialog = UserDialog.objects.create(
+            user_dialog, created = UserDialog.objects.get_or_create(
                 user=request.user,
                 chat_room=chat_room,
                 message=serializer.validated_data["message"],
             )
+            if not created:
+                user_dialog.message = serializer.validated_data["message"]
             user_dialog.save()
         return Response(data={"message": "Successfully sent"}, status=status.HTTP_201_CREATED)
 
@@ -59,7 +57,7 @@ class AIMessageView(RetrieveAPIView):
         response = model.generate_content(str(user_dialog.message))
 
         # Gemini API 응답 데이터를 JSON 형식으로 파싱
-        json_str = response.result.candidates[0].content.parts[0].text
+        json_str = response._result.candidates[0].content.parts[0].text
         if not json_str:
             return Response(data={"message": "Failed to get response from AI"}, status=status.HTTP_404_NOT_FOUND)
         response_data = json.loads(json_str)
@@ -72,19 +70,28 @@ class AIMessageView(RetrieveAPIView):
 
         # AIDialog instance 생성
         with transaction.atomic():
-            ai_dialog = AIDialog.objects.create(
-                user_dialog=user_dialog, message=structured_response["message"], applied_state=False
+            ai_dialog, created = AIDialog.objects.get_or_create(
+                user_dialog=user_dialog,
+                defaults={
+                    "message": structured_response["message"],
+                    "applied_state": False
+                }
             )
-            ai_dialog.save()
+            if not created:
+                ai_dialog.message = structured_response["message"]
 
-            ai_emotional_analysis = AIEmotionalAnalysis.objects.create(
+            ai_emotional_analysis, _ = AIEmotionalAnalysis.objects.update_or_create(
                 ai_dialog=ai_dialog,
-                happiness=structured_response["sentiments"].get("happiness", 0.0),
-                anger=structured_response["sentiments"].get("anger", 0.0),
-                sadness=structured_response["sentiments"].get("sadness", 0.0),
-                worry=structured_response["sentiments"].get("worry", 0.0),
-                indifference=structured_response["sentiments"].get("indifference", 0.0),
+                defaults={
+                    "happiness": structured_response["sentiments"].get("happiness", 0.0),
+                    "anger": structured_response["sentiments"].get("anger", 0.0),
+                    "sadness": structured_response["sentiments"].get("sadness", 0.0),
+                    "worry": structured_response["sentiments"].get("worry", 0.0),
+                    "indifference": structured_response["sentiments"].get("indifference", 0.0),
+                }
             )
+
+            ai_dialog.save()
             ai_emotional_analysis.save()
 
         serializer = self.get_serializer(ai_dialog)
