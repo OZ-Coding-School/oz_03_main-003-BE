@@ -25,6 +25,10 @@ class UserMessageView(ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)  # validate만 수행
         serializer.is_valid(raise_exception=True)
 
+        # 만약 해당 채팅방에서 이미 사용자 데이터를 전송했다면
+        if UserDialog.objects.filter(user=request.user, chat_room=chat_room).exists():
+            return Response(data={"message": "Already sent"}, status=status.HTTP_400_BAD_REQUEST)
+
         with transaction.atomic():
             user_dialog = UserDialog.objects.create(
                 user=request.user,
@@ -55,7 +59,7 @@ class AIMessageView(RetrieveAPIView):
         response = model.generate_content(str(user_dialog.message))
 
         # Gemini API 응답 데이터를 JSON 형식으로 파싱
-        json_str = response._result.candidates[0].content.parts[0].text
+        json_str = response.result.candidates[0].content.parts[0].text
         if not json_str:
             return Response(data={"message": "Failed to get response from AI"}, status=status.HTTP_404_NOT_FOUND)
         response_data = json.loads(json_str)

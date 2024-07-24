@@ -53,7 +53,7 @@ class AIMessageReceiveTest(TestCase):
     def test_ai_response(self, MockGenerativeModel):
         # AI에 실제 요청을 하지는 않고, 다음과 같은 응답 데이터가 전달된다고 가정 (Mock)
         mock_instance = MockGenerativeModel.return_value
-        mock_instance.generate_content.return_value = json.dumps(
+        mock_instance.generate_content.return_value.result.candidates[0].content.parts[0].text = json.dumps(
             {
                 "sentiments": {"happiness": 7.0, "sadness": 1.0, "anger": 0.0, "worry": 0.0, "indifference": 2.0},
                 "message": "Mocked AI response",

@@ -3,8 +3,16 @@ from rest_framework import serializers
 from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 
 
+class AIEmotionalAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIEmotionalAnalysis
+        fields = ["happiness", "anger", "sadness", "worry", "indifference"]
+
+
 class AIMessageSerializer(serializers.ModelSerializer):
     message_uuid = serializers.UUIDField(read_only=True)
+    sentiments = AIEmotionalAnalysisSerializer(source="aiemotionalanalysis", read_only=True)
+    applied_state = serializers.BooleanField(read_only=True)
 
     def validate(self, attrs):
         if "message" not in attrs:
@@ -16,7 +24,7 @@ class AIMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AIDialog
-        fields = ["message_uuid", "message"]
+        fields = ["sentiments", "message_uuid", "message", "applied_state"]
 
 
 class UserMessageSerializer(serializers.ModelSerializer):
@@ -33,12 +41,6 @@ class UserMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDialog
         fields = ["message_uuid", "message"]
-
-
-class AIEmotionalAnalysisSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AIEmotionalAnalysis
-        fields = ["happiness", "anger", "sadness", "worry", "indifference"]
 
 
 class DialogSerializer(serializers.Serializer):
