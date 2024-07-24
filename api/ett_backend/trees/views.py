@@ -1,10 +1,13 @@
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from chatroom.models import ChatRoom
+from dialog.models import UserDialog, AIDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
@@ -115,7 +118,7 @@ class TreeEmotionListView(ListAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TreeEmotionRetrieveView(RetrieveUpdateAPIView):
+class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
     serializer_class = TreeEmotionSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "tree_uuid"
@@ -136,15 +139,50 @@ class TreeEmotionRetrieveView(RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         tree_uuid = kwargs.get(self.lookup_field)
-        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
-        if not tree:
-            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
+        chat_room_uuid = request.data.get("chat_room_uuid")
 
-        tree_emotion = TreeEmotion.objects.filter(tree=tree).first()
+        # Prefetch 관련 데이터를 한 번에 가져옴
+        chat_room = get_object_or_404(
+            ChatRoom.objects.prefetch_related(
+                Prefetch(
+                    'user_dialog',
+                    queryset=UserDialog.objects.filter(user=request.user).prefetch_related(
+                        Prefetch('ai_dialog')
+                    )
+                )
+            ),
+            chat_room_uuid=chat_room_uuid,
+            user=request.user
+        )
+
+        # user_dialog를 찾아봄
+        user_dialog = getattr(chat_room, 'user_dialog', None)
+        if not user_dialog or user_dialog.user != request.user:
+            return Response(data={"message": "UserDialog not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # ai_dialog를 찾아봄
+        ai_dialog = getattr(user_dialog, 'ai_dialog', None)
+        if not ai_dialog:
+            return Response(data={"message": "AIDialog not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # 해당 chat_room에 대해 이미 AI 응답이 Tree에 반영되었다면
+        if ai_dialog.applied_state:
+            return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # tree와 tree_emotion을 함께 찾아봄
+        tree_emotion = TreeEmotion.objects.select_related('tree').filter(
+            tree__tree_uuid=tree_uuid, tree__forest__user=request.user
+        ).first()
         if not tree_emotion:
             return Response(data={"message": "tree emotion not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # serializer를 사용하여 데이터 업데이트
         serializer = TreeEmotionUpdateSerializer(instance=tree_emotion, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
+
+        # ai_dialog의 상태 업데이트
+        ai_dialog.applied_state = True
+        ai_dialog.save()
+
         return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)

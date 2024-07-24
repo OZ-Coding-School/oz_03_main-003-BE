@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from chatroom.models import ChatRoom
+from dialog.models import UserDialog, AIEmotionalAnalysis, AIDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
@@ -70,7 +72,7 @@ class GetTreeEmotionTest(APITestCase):
         self.assertEqual(TreeDetail.objects.count(), 1)
         self.assertEqual(TreeEmotion.objects.count(), 1)
         self.emotion_retrieve_url = reverse(
-            "tree_emotion_retrieve_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
+            "tree_emotion_retrieve_update_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
         )
         response = self.client.get(self.emotion_retrieve_url)
 
@@ -84,7 +86,7 @@ class GetTreeEmotionTest(APITestCase):
         self.assertEqual(TreeDetail.objects.count(), 1)
         self.assertEqual(TreeEmotion.objects.count(), 1)
         self.emotion_retrieve_url = reverse(
-            "tree_emotion_retrieve_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
+            "tree_emotion_retrieve_update_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
         )
         response = self.client.get(self.emotion_retrieve_url, data={"detail_sentiment": ["h", "s"]})
 
@@ -99,3 +101,50 @@ class GetTreeEmotionTest(APITestCase):
         print("Test 4-2")
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_tree_emotion_update(self):
+        response = self.client.post(self.create_url)
+        self.assertEqual(TreeDetail.objects.count(), 1)
+        self.assertEqual(TreeEmotion.objects.count(), 1)
+
+        tree = TreeDetail.objects.filter(tree_uuid=response.data.get("tree_uuid")).first()
+        self.chat_room = ChatRoom.objects.create(user=self.user, tree=tree)
+        self.user_dialog = UserDialog.objects.create(user=self.user, chat_room=self.chat_room, message="test user message")
+        self.ai_dialog = AIDialog.objects.create(user_dialog=self.user_dialog, message="test message")
+        self.ai_emotional_analysis = AIEmotionalAnalysis.objects.create(
+            ai_dialog=self.ai_dialog, happiness=0.0, anger=0.0, sadness=0.0, worry=0.0, indifference=0.0
+        )
+
+        self.emotion_update_url = reverse(
+            "tree_emotion_retrieve_update_view", kwargs={"tree_uuid": response.data["tree_uuid"]}
+        )
+        response = self.client.patch(
+            self.emotion_update_url,
+            data={
+                "chat_room_uuid": self.chat_room.chat_room_uuid,
+                "happiness": 11.0,
+            }
+        )
+        tree_emotion = TreeEmotion.objects.filter(tree=tree).first()
+
+        print("#" * 50)
+        print("Test 5")
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(tree_emotion.happiness, 11.0)
+        self.ai_dialog.refresh_from_db()
+        self.assertEqual(self.ai_dialog.applied_state, True)
+
+        # 동일한 내용으로 다시 시도하면 400 출력해야함
+        self.emotion_update_url = reverse(
+            "tree_emotion_retrieve_update_view", kwargs={"tree_uuid": tree.tree_uuid}
+        )
+        response = self.client.patch(
+            self.emotion_update_url,
+            data={
+                "chat_room_uuid": self.chat_room.chat_room_uuid,
+                "happiness": 11.0,
+            }
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(self.ai_dialog.applied_state, False)
