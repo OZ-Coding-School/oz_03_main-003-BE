@@ -34,7 +34,7 @@ class ForestRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         forest = Forest.objects.filter(user=request.user).first()
         if not forest:
-            return Response({"error": "Forest not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Forest not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = ForestRetreiveSerializer(forest)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -42,11 +42,11 @@ class ForestRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         forest_uuid = kwargs.get(self.lookup_field)
         forest = Forest.objects.filter(forest_uuid=forest_uuid, user=request.user).first()
         if not forest:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"message": "forest not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = ForestUpdateSerializer(instance=forest, data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         forest_uuid = kwargs.get(self.lookup_field)
