@@ -58,6 +58,42 @@ class TreeUpdateSerializer(serializers.ModelSerializer):
         }
 
 
+class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
+
+    def validate(self, attrs):
+        if "happiness" in attrs and attrs["happiness"] < 0:
+            raise serializers.ValidationError("happiness must be greater than or equal to 0")
+        if "anger" in attrs and attrs["anger"] < 0:
+            raise serializers.ValidationError("anger must be greater than or equal to 0")
+        if "sadness" in attrs and attrs["sadness"] < 0:
+            raise serializers.ValidationError("sadness must be greater than or equal to 0")
+        if "worry" in attrs and attrs["worry"] < 0:
+            raise serializers.ValidationError("worry must be greater than or equal to 0")
+        if "indifference" in attrs and attrs["indifference"] < 0:
+            raise serializers.ValidationError("indifference must be greater than or equal to 0")
+        return attrs
+
+    def update(self, instance, validated_data):
+        instance.happiness = validated_data.get("happiness", instance.happiness)
+        instance.anger = validated_data.get("anger", instance.anger)
+        instance.sadness = validated_data.get("sadness", instance.sadness)
+        instance.worry = validated_data.get("worry", instance.worry)
+        instance.indifference = validated_data.get("indifference", instance.indifference)
+        instance.save()
+        return instance
+
+    class Meta:
+        model = TreeEmotion
+        fields = ["happiness", "anger", "sadness", "worry", "indifference"]
+        extra_kwargs = {
+            "happiness": {"required": False},
+            "anger": {"required": False},
+            "sadness": {"required": False},
+            "worry": {"required": False},
+            "indifference": {"required": False},
+        }
+
+
 class TreeEmotionListSerializer(serializers.ModelSerializer):
     tree_uuid = serializers.UUIDField(source="tree.tree_uuid")
     emotions = TreeEmotionSerializer(source="*")

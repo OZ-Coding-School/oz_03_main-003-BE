@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -11,6 +11,7 @@ from trees.serializers import (
     FilteredTreeEmotionSerializer,
     TreeEmotionListSerializer,
     TreeEmotionSerializer,
+    TreeEmotionUpdateSerializer,
     TreeSerializer,
     TreeUpdateSerializer,
 )
@@ -49,21 +50,22 @@ class TreeListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        tree_uuid = request.query_params.get("tree_uuid")
-        if tree_uuid:
-            tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
-            serializer = self.get_serializer(tree)
-            return Response(serializer.data, status=status.HTTP_200_OK)
         forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
         serializer = self.get_serializer(forest.related_tree.all(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     serializer_class = TreeUpdateSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "tree_uuid"
     queryset = TreeDetail.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
+        serializer = TreeSerializer(tree)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
@@ -80,9 +82,9 @@ class TreeUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         tree_uuid = kwargs.get(self.lookup_field)
         tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
         if not tree:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(data={"message": "Successfully deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class TreeEmotionListView(ListAPIView):
@@ -112,7 +114,7 @@ class TreeEmotionListView(ListAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class TreeEmotionRetrieveView(RetrieveAPIView):
+class TreeEmotionRetrieveView(RetrieveUpdateAPIView):
     serializer_class = TreeEmotionSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = "tree_uuid"
@@ -127,5 +129,21 @@ class TreeEmotionRetrieveView(RetrieveAPIView):
         if request.query_params.get("detail_sentiment"):
             serializer = FilteredTreeEmotionSerializer(tree_emotion, context={"request": request})
         else:
-            serializer = TreeEmotionListSerializer(tree_emotion)
+            serializer = self.get_serializer(tree_emotion)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
+        if not tree:
+            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        tree_emotion = TreeEmotion.objects.filter(tree=tree).first()
+        if not tree_emotion:
+            return Response(data={"message": "tree emotion not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = TreeEmotionUpdateSerializer(instance=tree_emotion, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)
