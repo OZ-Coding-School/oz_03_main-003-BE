@@ -51,14 +51,12 @@ class ChatRoomUpdateTest(TestCase):
             tree=self.tree,
             chat_room_uuid=uuid.uuid4(),
             chat_room_name="test",
-            analyze_target_name="test target",
         )
 
     def test_put_chat_room(self):
         new_data = {
             "tree_uuid": self.new_tree.tree_uuid,
             "chat_room_name": "updated name",
-            "analyze_target_name": "updated target name",
         }
         response = self.client.put(
             path=reverse("chat_room_retrieve_update_delete", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}),
@@ -70,12 +68,10 @@ class ChatRoomUpdateTest(TestCase):
         chat_room = ChatRoom.objects.filter(user=self.user).first()
         self.assertEqual(chat_room.tree, self.new_tree)
         self.assertEqual(chat_room.chat_room_name, "updated name")
-        self.assertEqual(chat_room.analyze_target_name, "updated target name")
 
     def test_patch_chat_room(self):
         new_data = {
             "chat_room_name": "updated name",
-            "analyze_target_name": "updated target name",
         }
         response = self.client.patch(
             path=reverse("chat_room_retrieve_update_delete", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}),
@@ -86,4 +82,3 @@ class ChatRoomUpdateTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         chat_room = ChatRoom.objects.filter(user=self.user).first()
         self.assertEqual(chat_room.chat_room_name, "updated name")
-        self.assertEqual(chat_room.analyze_target_name, "updated target name")

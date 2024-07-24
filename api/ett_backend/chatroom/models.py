@@ -13,7 +13,6 @@ class ChatRoom(TimeStampModel):
 
     chat_room_uuid = models.UUIDField(default=uuid.uuid4, unique=True, db_index=True)
     chat_room_name = models.CharField(max_length=255, default="My Chat Room")  # Chat Room Name
-    analyze_target_name = models.CharField(max_length=255, null=True)  # 감정 분석 할 상대방 이름
 
     class Meta:
         db_table = "chat_room"

@@ -26,11 +26,7 @@ class ChatRoomUpdateTest(TestCase):
         self.access_token = str(self.refresh_token.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.access_token}")
         self.chat_room = ChatRoom.objects.create(
-            user=self.user,
-            chat_room_uuid=uuid.uuid4(),
-            chat_room_name="test",
-            analyze_target_name="test target",
-            analyze_target_relation="test relation",
+            user=self.user, tree=None, chat_room_uuid=uuid.uuid4(), chat_room_name="test"
         )
 
     def test_delete_chat_room(self):

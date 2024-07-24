@@ -11,7 +11,7 @@ from trees.models import TreeDetail
 from users.models import User
 
 
-class ChatRoomCreateTest(TestCase):
+class ChatRoomRetrieveTest(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create(
@@ -36,11 +36,7 @@ class ChatRoomCreateTest(TestCase):
             tree_uuid=uuid.uuid4(),
         )
         self.chat_room = ChatRoom.objects.create(
-            user=self.user,
-            tree=self.tree,
-            chat_room_uuid=uuid.uuid4(),
-            chat_room_name="test",
-            analyze_target_name="test target",
+            user=self.user, tree=self.tree, chat_room_uuid=uuid.uuid4(), chat_room_name="test"
         )
         self.refresh_token = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh_token.access_token)
@@ -53,5 +49,4 @@ class ChatRoomCreateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["chat_room_name"], "test")
-        self.assertEqual(response.data["analyze_target_name"], "test target")
         print(response.data)

@@ -7,14 +7,11 @@ from trees.models import TreeDetail
 class ChatRoomCreateSerializer(serializers.Serializer):
     chat_room_uuid = serializers.UUIDField(read_only=True)
     chat_room_name = serializers.CharField(write_only=True)
-    analyze_target_name = serializers.CharField(write_only=True)
     tree_uuid = serializers.UUIDField(write_only=True)
 
     def validate(self, attrs):
         if "chat_room_name" not in attrs:
             raise serializers.ValidationError({"chat_room_name": "This field is required."})
-        if "analyze_target_name" not in attrs:
-            raise serializers.ValidationError({"analyze_target_name": "This field is required."})
         if "tree_uuid" not in attrs:
             raise serializers.ValidationError({"tree_uuid": "This field is required."})
         return attrs
@@ -23,7 +20,7 @@ class ChatRoomCreateSerializer(serializers.Serializer):
 class ChatRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
-        fields = ["chat_room_uuid", "chat_room_name", "analyze_target_name"]
+        fields = ["chat_room_uuid", "chat_room_name"]
 
 
 class ChatRoomUpdateSerializer(serializers.ModelSerializer):
@@ -32,8 +29,6 @@ class ChatRoomUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if "chat_room_name" in attrs and attrs["chat_room_name"] == "":
             return serializers.ValidationError("chat_room_name must not empty")
-        if "analyze_target_name" in attrs and attrs["analyze_target_name"] == "":
-            return serializers.ValidationError("analyze_target_name must not empty")
         if "tree_uuid" in attrs and attrs["tree_uuid"] == "":
             return serializers.ValidationError("tree_uuid must not empty")
         return attrs
@@ -47,7 +42,6 @@ class ChatRoomUpdateSerializer(serializers.ModelSerializer):
             instance.tree = tree
 
         instance.chat_room_name = validated_data.get("chat_room_name", instance.chat_room_name)
-        instance.analyze_target_name = validated_data.get("analyze_target_name", instance.analyze_target_name)
         instance.save()
         return instance
 
@@ -55,10 +49,8 @@ class ChatRoomUpdateSerializer(serializers.ModelSerializer):
         model = ChatRoom
         fields = [
             "chat_room_name",
-            "analyze_target_name",
             "tree_uuid",
         ]
         extra_kwargs = {
             "chat_room_name": {"required": False},
-            "analyze_target_name": {"required": False},
         }
