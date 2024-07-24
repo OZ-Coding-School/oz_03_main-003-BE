@@ -52,10 +52,13 @@ class AIMessageView(RetrieveAPIView):
         user_dialog = UserDialog.objects.filter(user=request.user, chat_room=chat_room).first()
 
         model = GeminiModel().set_model()
-        response = model.generate_content(user_dialog.message)
+        response = model.generate_content(str(user_dialog.message))
 
         # Gemini API 응답 데이터를 JSON 형식으로 파싱
-        response_data = json.loads(response)
+        json_str = response._result.candidates[0].content.parts[0].text
+        if not json_str:
+            return Response(data={"message": "Failed to get response from AI"}, status=status.HTTP_404_NOT_FOUND)
+        response_data = json.loads(json_str)
 
         # json 형식으로 응답 데이터 생성 (Django에서 전달하는)
         structured_response = {
