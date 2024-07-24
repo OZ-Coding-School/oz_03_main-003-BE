@@ -19,7 +19,9 @@ class UserDialog(TimeStampModel):
 
 
 class AIDialog(TimeStampModel):
-    user_dialog = models.OneToOneField(UserDialog, on_delete=models.CASCADE, related_name="ai_dialog")  # 어떤 user dialog에 대한 답변인지
+    user_dialog = models.OneToOneField(
+        UserDialog, on_delete=models.CASCADE, related_name="ai_dialog"
+    )  # 어떤 user dialog에 대한 답변인지
 
     message_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     message = models.TextField(null=True)
