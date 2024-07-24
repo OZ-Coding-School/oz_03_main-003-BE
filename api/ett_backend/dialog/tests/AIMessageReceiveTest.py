@@ -1,7 +1,7 @@
 import json
 import uuid
-from unittest.mock import patch
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -9,7 +9,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from chatroom.models import ChatRoom
-from dialog.models import AIDialog, UserDialog, AIEmotionalAnalysis
+from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
@@ -41,18 +41,13 @@ class AIMessageReceiveTest(TestCase):
             forest=self.forest,
             tree_name="test",
         )
-        self.tree_emotion = TreeEmotion.objects.create(
-            tree=self.tree
-        )
+        self.tree_emotion = TreeEmotion.objects.create(tree=self.tree)
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse(
-            "user_message",
-            kwargs={"chat_room_uuid": self.chat_room_uuid}
-        )
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.chat_room_uuid})
 
     @patch("gemini.models.genai.GenerativeModel")
     def test_ai_response(self, MockGenerativeModel):
@@ -60,13 +55,7 @@ class AIMessageReceiveTest(TestCase):
         mock_instance = MockGenerativeModel.return_value
         mock_instance.generate_content.return_value = json.dumps(
             {
-                "sentiments": {
-                    "happiness": 7.0,
-                    "sadness": 1.0,
-                    "anger": 0.0,
-                    "worry": 0.0,
-                    "indifference": 2.0
-                },
+                "sentiments": {"happiness": 7.0, "sadness": 1.0, "anger": 0.0, "worry": 0.0, "indifference": 2.0},
                 "message": "Mocked AI response",
             }
         )
@@ -98,11 +87,11 @@ class AIMessageReceiveTest(TestCase):
         # Convert the returned sentiments to Decimal for comparison
         returned_sentiments = ai_response.data.get("sentiments")
         expected_sentiments = {
-            "happiness": Decimal('7.0'),
-            "sadness": Decimal('1.0'),
-            "anger": Decimal('0.0'),
-            "worry": Decimal('0.0'),
-            "indifference": Decimal('2.0')
+            "happiness": Decimal("7.0"),
+            "sadness": Decimal("1.0"),
+            "anger": Decimal("0.0"),
+            "worry": Decimal("0.0"),
+            "indifference": Decimal("2.0"),
         }
 
         for sentiment, value in expected_sentiments.items():

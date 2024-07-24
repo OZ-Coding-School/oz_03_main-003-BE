@@ -36,10 +36,7 @@ class ChatRoomRetrieveTest(TestCase):
             tree_uuid=uuid.uuid4(),
         )
         self.chat_room = ChatRoom.objects.create(
-            user=self.user,
-            tree=self.tree,
-            chat_room_uuid=uuid.uuid4(),
-            chat_room_name="test"
+            user=self.user, tree=self.tree, chat_room_uuid=uuid.uuid4(), chat_room_name="test"
         )
         self.refresh_token = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh_token.access_token)
@@ -47,9 +44,7 @@ class ChatRoomRetrieveTest(TestCase):
 
     def test_chat_retrieve(self):
         response = self.client.get(
-            path=reverse(
-                "chat_room_retrieve_update_delete",
-                kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid})
+            path=reverse("chat_room_retrieve_update_delete", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid})
         )
 
         self.assertEqual(response.status_code, 200)

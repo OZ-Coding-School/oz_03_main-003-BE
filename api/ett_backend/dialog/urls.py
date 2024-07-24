@@ -1,6 +1,6 @@
 from django.urls import path
 
-from dialog.views import AIMessageView, UserMessageView, DialogView
+from dialog.views import AIMessageView, DialogView, UserMessageView
 
 urlpatterns = [
     path("message/user/<uuid:chat_room_uuid>", UserMessageView.as_view(), name="user_message"),

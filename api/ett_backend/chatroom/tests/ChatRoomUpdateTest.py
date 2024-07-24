@@ -59,10 +59,7 @@ class ChatRoomUpdateTest(TestCase):
             "chat_room_name": "updated name",
         }
         response = self.client.put(
-            path=reverse(
-                "chat_room_retrieve_update_delete",
-                kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}
-            ),
+            path=reverse("chat_room_retrieve_update_delete", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}),
             data=new_data,
             format="json",
         )
@@ -77,10 +74,7 @@ class ChatRoomUpdateTest(TestCase):
             "chat_room_name": "updated name",
         }
         response = self.client.patch(
-            path=reverse(
-                "chat_room_retrieve_update_delete",
-                kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}
-            ),
+            path=reverse("chat_room_retrieve_update_delete", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}),
             data=new_data,
             format="json",
         )

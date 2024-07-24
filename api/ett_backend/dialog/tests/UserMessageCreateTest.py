@@ -39,19 +39,13 @@ class UserMessageCreateTest(TestCase):
             forest=self.forest,
             tree_name="test",
         )
-        self.tree_emotion=TreeEmotion.objects.create(
-            tree=self.tree
-        )
+        self.tree_emotion = TreeEmotion.objects.create(tree=self.tree)
         self.refresh = RefreshToken.for_user(self.user)
         self.access_token = str(self.refresh.access_token)
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse(
-            "user_message",
-            kwargs={"chat_room_uuid": self.chat_room_uuid}
-        )
-
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.chat_room_uuid})
 
     def test_message_send(self):
         response = self.client.post(

@@ -48,15 +48,10 @@ class UserMessageRetrieveTest(TestCase):
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse(
-            "user_message",
-            kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}
-        )
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid})
 
         self.user_dialog = UserDialog.objects.create(
-            user=self.user,
-            chat_room=self.chat_room,
-            message="Hello, my name is ASDF"
+            user=self.user, chat_room=self.chat_room, message="Hello, my name is ASDF"
         )
 
     def test_user_message_retrieve(self):
@@ -69,10 +64,7 @@ class UserMessageRetrieveTest(TestCase):
 
     def test_user_message_retrieve_failed(self):
         # 다른 사용자가 생성한 채팅방 uuid를 제공한 경우
-        self.url = reverse(
-            "user_message",
-            kwargs={"chat_room_uuid": self.other_chat_room.chat_room_uuid}
-        )
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.other_chat_room.chat_room_uuid})
         response = self.client.get(path=self.url)
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

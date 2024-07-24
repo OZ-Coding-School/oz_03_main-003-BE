@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from dialog.models import UserDialog, AIDialog, AIEmotionalAnalysis
+
+from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 
 
 class AIMessageSerializer(serializers.ModelSerializer):
@@ -38,14 +39,6 @@ class AIEmotionalAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = AIEmotionalAnalysis
         fields = ["happiness", "anger", "sadness", "worry", "indifference"]
-
-
-class AIMessageSerializer(serializers.ModelSerializer):
-    sentiments = AIEmotionalAnalysisSerializer(source='aiemotionalanalysis', read_only=True)
-
-    class Meta:
-        model = AIDialog
-        fields = ["message_uuid", "message", "sentiments", "applied_state"]
 
 
 class DialogSerializer(serializers.Serializer):

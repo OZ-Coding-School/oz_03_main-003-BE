@@ -2,13 +2,13 @@ import json
 
 from django.db import transaction
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView, get_object_or_404, ListCreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
-from dialog.models import AIDialog, UserDialog, AIEmotionalAnalysis
-from dialog.serializers import UserMessageSerializer, AIMessageSerializer, DialogSerializer
+from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
+from dialog.serializers import AIMessageSerializer, DialogSerializer, UserMessageSerializer
 from gemini.models import GeminiModel
 
 
@@ -22,7 +22,7 @@ class UserMessageView(ListCreateAPIView):
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
 
-        serializer = self.get_serializer(data=request.data) # validate만 수행
+        serializer = self.get_serializer(data=request.data)  # validate만 수행
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
@@ -66,9 +66,7 @@ class AIMessageView(RetrieveAPIView):
         # AIDialog instance 생성
         with transaction.atomic():
             ai_dialog = AIDialog.objects.create(
-                user_dialog=user_dialog,
-                message=structured_response["message"],
-                applied_state=False
+                user_dialog=user_dialog, message=structured_response["message"], applied_state=False
             )
             ai_dialog.save()
 
@@ -102,10 +100,7 @@ class DialogView(RetrieveAPIView):
         ai_emotional_analysis = get_object_or_404(AIEmotionalAnalysis, ai_dialog=ai_dialog)
 
         response_data = {
-            "user": {
-                "message_uuid": str(user_dialog.message_uuid),
-                "message": user_dialog.message
-            },
+            "user": {"message_uuid": str(user_dialog.message_uuid), "message": user_dialog.message},
             "ai": {
                 "message_uuid": str(ai_dialog.message_uuid),
                 "message": ai_dialog.message,
@@ -114,9 +109,9 @@ class DialogView(RetrieveAPIView):
                     "anger": ai_emotional_analysis.anger,
                     "sadness": ai_emotional_analysis.sadness,
                     "worry": ai_emotional_analysis.worry,
-                    "indifference": ai_emotional_analysis.indifference
-                }
-            }
+                    "indifference": ai_emotional_analysis.indifference,
+                },
+            },
         }
 
         return Response(data=response_data, status=status.HTTP_200_OK)
