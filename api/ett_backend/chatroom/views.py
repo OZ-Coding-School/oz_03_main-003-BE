@@ -22,7 +22,7 @@ class ChatRoomCreateView(CreateAPIView):
         serializer.is_valid(raise_exception=True)
         tree = TreeDetail.objects.filter(tree_uuid=serializer.validated_data["tree_uuid"]).first()
         if not tree:
-            return Response(data={"message": "tree not found"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
 
         with transaction.atomic():
             new_chatroom = ChatRoom.objects.create(
@@ -78,4 +78,4 @@ class ChatRoomRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if not chat_room:
             return Response(data={"message": "chat room not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=chat_room)
-        return Response(data={"message": "Successfully deleted"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)

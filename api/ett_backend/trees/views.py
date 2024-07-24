@@ -84,12 +84,13 @@ class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         if not tree:
             return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
-        return Response(data={"message": "Successfully deleted"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TreeEmotionListView(ListAPIView):
     serializer_class = TreeEmotionListSerializer
     permission_classes = [IsAuthenticated]
+    queryset = TreeEmotion.objects.all()
 
     def list(self, request, *args, **kwargs):
         user = request.user
