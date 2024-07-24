@@ -2,96 +2,54 @@ import json
 
 from django.db import transaction
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
-from dialog.models import AIDialog, UserDialog
-from dialog.serializers import UserMessageSerializer
+from dialog.models import AIDialog, UserDialog, AIEmotionalAnalysis
+from dialog.serializers import UserMessageSerializer, AIMessageSerializer, DialogSerializer
 from gemini.models import GeminiModel
-from users.serializers import EmptySerializer
 
 
-class UserMessageCreateView(CreateAPIView):
+class UserMessageView(ListCreateAPIView):
     serializer_class = UserMessageSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        chat_room_uuid = kwargs.get("chat_room_uuid")
+        if not chat_room_uuid:
+            return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
+
+        serializer = self.get_serializer(data=request.data) # validate만 수행
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
             user_dialog = UserDialog.objects.create(
                 user=request.user,
-                chat_room=serializer.validated_data["chat_room"],
-                text=serializer.validated_data["message"],
+                chat_room=chat_room,
+                message=serializer.validated_data["message"],
             )
             user_dialog.save()
-        return Response(status=status.HTTP_201_CREATED)
+        return Response(data={"message": "Successfully sent"}, status=status.HTTP_201_CREATED)
+
+    def get(self, request, *args, **kwargs):
+        chat_room_uuid = kwargs.get("chat_room_uuid")
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
+        user_dialog = get_object_or_404(UserDialog, user=request.user, chat_room=chat_room)
+        serializer = self.get_serializer(user_dialog)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-# class UserMessageRetrieveView(GenericAPIView):
-#     """
-#     User message retrieve view
-#     """
-#
-#     serializer_class = UserMessageRetrieveSerializer
-#     permission_classes = [AllowAny]
-#
-#     def get(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.query_params)
-#         serializer.is_valid(raise_exception=True)
-#
-#         return Response(
-#             {
-#                 "user_uuid": serializer.validated_data["user_uuid"],
-#                 "chat_room_uuid": serializer.validated_data["chat_room_uuid"],
-#                 "user_message": get_object_or_404(
-#                     UserDialog, user=serializer.validated_data["user"], chat_room=serializer.validated_data["chat_room"]
-#                 ).text,
-#             }
-#         )
-
-
-# class UserMessageListView(GenericAPIView):
-#     """
-#     Get all dialog list of User
-#     """
-#
-#     serializer_class = UserMessageListSerializer
-#     permission_classes = [AllowAny]
-#
-#     def get(self, request, *args, **kwargs):
-#         serializer = self.get_serializer(data=request.query_params)
-#         serializer.is_valid(raise_exception=True)
-#         user_dialog_queryset = UserDialog.objects.filter(user=serializer.validated_data["user"])
-#         ai_dialog_queryset = AIDialog.objects.filter(user=serializer.validated_data["user"])
-#
-#         messages = []
-#         for user_dialog in user_dialog_queryset:
-#             ai_response = ai_dialog_queryset.filter(user_dialog=user_dialog).first()
-#             messages.append(
-#                 {
-#                     "user_uuid": user_dialog.user.uuid,
-#                     "chat_room_uuid": user_dialog.chat_room.chat_room_uuid,
-#                     "user_message": user_dialog.text,
-#                     "ai_response": ai_response.text if ai_response else None,
-#                 }
-#             )
-#
-#         return Response(messages, status=status.HTTP_200_OK)
-
-
-class AIMessageRetrieveView(RetrieveAPIView):
-    serializer_class = EmptySerializer
+class AIMessageView(RetrieveAPIView):
+    serializer_class = AIMessageSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user = request.user
         chat_room_uuid = kwargs.get("chat_room_uuid")
-        chat_room = ChatRoom.objects.filter(user=user, chat_room_uuid=chat_room_uuid).first()
-        user_dialog = UserDialog.objects.filter(user=user, chat_room=chat_room).first()
+        chat_room = ChatRoom.objects.filter(user=request.user, chat_room_uuid=chat_room_uuid).first()
+        user_dialog = UserDialog.objects.filter(user=request.user, chat_room=chat_room).first()
 
         model = GeminiModel().set_model()
         response = model.generate_content(user_dialog.message)
@@ -107,13 +65,58 @@ class AIMessageRetrieveView(RetrieveAPIView):
 
         # AIDialog instance 생성
         with transaction.atomic():
-            AIDialog.objects.create(
+            ai_dialog = AIDialog.objects.create(
                 user_dialog=user_dialog,
                 message=structured_response["message"],
-                sentiments=structured_response["sentiments"],
+                applied_state=False
             )
+            ai_dialog.save()
 
+            ai_emotional_analysis = AIEmotionalAnalysis.objects.create(
+                ai_dialog=ai_dialog,
+                happiness=structured_response["sentiments"].get("happiness", 0.0),
+                anger=structured_response["sentiments"].get("anger", 0.0),
+                sadness=structured_response["sentiments"].get("sadness", 0.0),
+                worry=structured_response["sentiments"].get("worry", 0.0),
+                indifference=structured_response["sentiments"].get("indifference", 0.0),
+            )
+            ai_emotional_analysis.save()
+
+        serializer = self.get_serializer(ai_dialog)
         return Response(
-            data=structured_response,
+            data=serializer.data,
             status=status.HTTP_200_OK,
         )
+
+
+class DialogView(RetrieveAPIView):
+    serializer_class = DialogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        chat_room_uuid = kwargs.get("chat_room_uuid")
+        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
+
+        user_dialog = get_object_or_404(UserDialog, user=request.user, chat_room=chat_room)
+        ai_dialog = get_object_or_404(AIDialog, user_dialog=user_dialog)
+        ai_emotional_analysis = get_object_or_404(AIEmotionalAnalysis, ai_dialog=ai_dialog)
+
+        response_data = {
+            "user": {
+                "message_uuid": str(user_dialog.message_uuid),
+                "message": user_dialog.message
+            },
+            "ai": {
+                "message_uuid": str(ai_dialog.message_uuid),
+                "message": ai_dialog.message,
+                "sentiments": {
+                    "happiness": ai_emotional_analysis.happiness,
+                    "anger": ai_emotional_analysis.anger,
+                    "sadness": ai_emotional_analysis.sadness,
+                    "worry": ai_emotional_analysis.worry,
+                    "indifference": ai_emotional_analysis.indifference
+                }
+            }
+        }
+
+        return Response(data=response_data, status=status.HTTP_200_OK)

@@ -45,7 +45,6 @@ class ChatRoomCreateTest(TestCase):
             path=reverse("create_chat_room"),
             data={
                 "chat_room_name": "test",
-                "analyze_target_name": "test target",
                 "tree_uuid": self.tree.tree_uuid,
             },
             format="json",
@@ -59,5 +58,4 @@ class ChatRoomCreateTest(TestCase):
 
         chat_room = ChatRoom.objects.get(user=self.user)
         self.assertEqual(chat_room.chat_room_name, "test")
-        self.assertEqual(chat_room.analyze_target_name, "test target")
         self.assertEqual(chat_room.tree, self.tree)

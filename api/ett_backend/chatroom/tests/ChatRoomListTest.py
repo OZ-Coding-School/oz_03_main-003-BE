@@ -46,7 +46,6 @@ class ChatRoomCreateTest(TestCase):
                     user=self.user,
                     chat_room_uuid=uuid.uuid4().hex,
                     chat_room_name=f"test{i}",
-                    analyze_target_name=f"test target{i}",
                     tree=self.tree,
                 )
             )

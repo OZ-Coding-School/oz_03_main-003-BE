@@ -16,7 +16,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username=None, password=None, **extra_fields):
+    def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("uuid", uuid.uuid4().hex)
@@ -26,7 +26,7 @@ class UserManager(BaseUserManager):
         if not email:
             raise ValueError("이메일 정보를 가져올 수 없습니다")
         email = self.normalize_email(email)
-        user = self.model(email=email, username=username, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)  # 관리자는 소셜로그인으로 인증하는게 아니니까 패스워드 설정
         user.save(using=self._db)
         return user

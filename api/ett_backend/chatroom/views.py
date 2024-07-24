@@ -30,7 +30,6 @@ class ChatRoomCreateView(CreateAPIView):
                 tree=tree,
                 chat_room_uuid=uuid.uuid4(),
                 chat_room_name=serializer.validated_data["chat_room_name"],
-                analyze_target_name=serializer.validated_data["analyze_target_name"],
             )
             new_chatroom.save()
         response_serializer = self.get_serializer(new_chatroom)

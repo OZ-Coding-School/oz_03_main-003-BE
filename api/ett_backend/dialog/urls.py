@@ -1,8 +1,9 @@
 from django.urls import path
 
-from dialog.views import AIMessageRetrieveView, UserMessageCreateView
+from dialog.views import AIMessageView, UserMessageView, DialogView
 
 urlpatterns = [
-    path("send", UserMessageCreateView.as_view(), name="send_user_message"),
-    path("message/ai/<uuid:chat_room_uuid>", AIMessageRetrieveView.as_view(), name="retrieve_ai_message"),
+    path("message/user/<uuid:chat_room_uuid>", UserMessageView.as_view(), name="user_message"),
+    path("message/ai/<uuid:chat_room_uuid>", AIMessageView.as_view(), name="ai_message"),
+    path("<uuid:chat_room_uuid>", DialogView.as_view(), name="dialog"),
 ]

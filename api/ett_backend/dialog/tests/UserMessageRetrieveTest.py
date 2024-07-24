@@ -4,6 +4,7 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from chatroom.models import ChatRoom
 from dialog.models import UserDialog
@@ -13,10 +14,9 @@ from users.models import User
 class UserMessageRetrieveTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user_uuid = uuid.uuid4().hex
-        self.chat_room_uuid = uuid.uuid4().hex
+        self.chat_room_uuid = uuid.uuid4()
         self.user = User.objects.create(
-            uuid=self.user_uuid,
+            uuid=uuid.uuid4(),
             username="test",
             email="test@example.com",
             profile_image="test",
@@ -24,28 +24,55 @@ class UserMessageRetrieveTest(TestCase):
             is_active=True,
             is_superuser=False,
         )
-
+        self.user2 = User.objects.create(
+            uuid=uuid.uuid4(),
+            username="test2",
+            email="test2@example.com",
+            profile_image="test2",
+            social_platform="none",
+            is_active=True,
+            is_superuser=False,
+        )
         self.chat_room = ChatRoom.objects.create(
-            chat_room_uuid=self.chat_room_uuid,
+            chat_room_uuid=uuid.uuid4(),
             chat_room_name="test",
-            analyze_target_name="test",
-            analyze_target_relation="test",
             user=self.user,
+        )
+        self.other_chat_room = ChatRoom.objects.create(
+            chat_room_uuid=uuid.uuid4(),
+            chat_room_name="test",
+            user=self.user2,
+        )
+        self.refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(self.refresh.access_token)
+        self.refresh_token = str(self.refresh)
+        self.client.cookies["access"] = self.access_token
+        self.client.cookies["refresh"] = self.refresh_token
+        self.url = reverse(
+            "user_message",
+            kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid}
         )
 
         self.user_dialog = UserDialog.objects.create(
-            user=self.user, chat_room=self.chat_room, text="Hello, my name is ASDF"
+            user=self.user,
+            chat_room=self.chat_room,
+            message="Hello, my name is ASDF"
         )
 
     def test_user_message_retrieve(self):
-        response = self.client.get(
-            path=reverse("get_user_message"),
-            data={
-                "user_uuid": self.user_uuid,
-                "chat_room_uuid": self.chat_room_uuid,
-            },
-        )
-
-        self.assertIn("user_message", response.data)
-        self.assertEqual(response.data["user_message"], "Hello, my name is ASDF")
+        response = self.client.get(path=self.url)
+        print(response.data)
+        self.assertIn("message", response.data)
+        self.assertIn("message_uuid", response.data)
+        self.assertEqual(response.data["message"], "Hello, my name is ASDF")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_user_message_retrieve_failed(self):
+        # 다른 사용자가 생성한 채팅방 uuid를 제공한 경우
+        self.url = reverse(
+            "user_message",
+            kwargs={"chat_room_uuid": self.other_chat_room.chat_room_uuid}
+        )
+        response = self.client.get(path=self.url)
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

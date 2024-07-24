@@ -1,22 +1,56 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
-
-from chatroom.models import ChatRoom
-from dialog.models import UserDialog
+from dialog.models import UserDialog, AIDialog, AIEmotionalAnalysis
 
 
-class UserMessageSerializer(serializers.ModelSerializer):
+class AIMessageSerializer(serializers.ModelSerializer):
+    message_uuid = serializers.UUIDField(read_only=True)
 
     def validate(self, attrs):
-        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=attrs["chat_room_uuid"])
         if "message" not in attrs:
             return serializers.ValidationError("messages is required")
         if "message" in attrs and attrs["message"] == "":
             return serializers.ValidationError("messages must not empty")
-        attrs["chat_room"] = chat_room
-        attrs["message"] = attrs["message"]
+
+        return attrs
+
+    class Meta:
+        model = AIDialog
+        fields = ["message_uuid", "message"]
+
+
+class UserMessageSerializer(serializers.ModelSerializer):
+    message_uuid = serializers.UUIDField(read_only=True)
+
+    def validate(self, attrs):
+        if "message" not in attrs:
+            return serializers.ValidationError("messages is required")
+        if "message" in attrs and attrs["message"] == "":
+            return serializers.ValidationError("messages must not empty")
+
         return attrs
 
     class Meta:
         model = UserDialog
-        fields = ["chat_room", "message"]
+        fields = ["message_uuid", "message"]
+
+
+class AIEmotionalAnalysisSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIEmotionalAnalysis
+        fields = ["happiness", "anger", "sadness", "worry", "indifference"]
+
+
+class AIMessageSerializer(serializers.ModelSerializer):
+    sentiments = AIEmotionalAnalysisSerializer(source='aiemotionalanalysis', read_only=True)
+
+    class Meta:
+        model = AIDialog
+        fields = ["message_uuid", "message", "sentiments", "applied_state"]
+
+
+class DialogSerializer(serializers.Serializer):
+    user = UserMessageSerializer(source="userdialog", read_only=True)
+    ai = AIMessageSerializer(source="aidialog", read_only=True)
+
+    class Meta:
+        fields = ["user", "ai"]
