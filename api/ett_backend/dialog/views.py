@@ -26,21 +26,24 @@ class UserMessageView(ListCreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            user_dialog, created = UserDialog.objects.get_or_create(
+            user_dialog = UserDialog.objects.create(
                 user=request.user,
                 chat_room=chat_room,
-                message=serializer.validated_data["message"],
+                message=serializer.validated_data["message"]
             )
-            if not created:
-                user_dialog.message = serializer.validated_data["message"]
             user_dialog.save()
-        return Response(data={"message": "Successfully sent"}, status=status.HTTP_201_CREATED)
+        return Response(data={"message_uuid": str(user_dialog.message_uuid)}, status=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):
         chat_room_uuid = kwargs.get("chat_room_uuid")
-        chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
-        user_dialog = get_object_or_404(UserDialog, user=request.user, chat_room=chat_room)
-        serializer = self.get_serializer(user_dialog)
+        user_dialog = UserDialog.objects.filter(
+            chat_room__chat_room_uuid=chat_room_uuid,
+            chat_room__user=request.user,
+            user=request.user
+        )
+        if not user_dialog:
+            return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(user_dialog, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
@@ -50,8 +53,18 @@ class AIMessageView(RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         chat_room_uuid = kwargs.get("chat_room_uuid")
-        chat_room = ChatRoom.objects.filter(user=request.user, chat_room_uuid=chat_room_uuid).first()
-        user_dialog = UserDialog.objects.filter(user=request.user, chat_room=chat_room).first()
+        message_uuid = request.data.get("message_uuid")
+        if not message_uuid:
+            return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_dialog = UserDialog.objects.filter(
+            chat_room__chat_room_uuid=chat_room_uuid,
+            message_uuid=message_uuid,
+            user=request.user
+        ).first()
+
+        if not user_dialog:
+            return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
 
         model = GeminiModel().set_model()
         response = model.generate_content(str(user_dialog.message))
@@ -70,15 +83,11 @@ class AIMessageView(RetrieveAPIView):
 
         # AIDialog instance 생성
         with transaction.atomic():
-            ai_dialog, created = AIDialog.objects.get_or_create(
+            ai_dialog = AIDialog.objects.create(
                 user_dialog=user_dialog,
-                defaults={
-                    "message": structured_response["message"],
-                    "applied_state": False
-                }
+                message=structured_response["message"],
+                applied_state=False
             )
-            if not created:
-                ai_dialog.message = structured_response["message"]
 
             ai_emotional_analysis, _ = AIEmotionalAnalysis.objects.update_or_create(
                 ai_dialog=ai_dialog,

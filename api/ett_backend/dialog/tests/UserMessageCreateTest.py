@@ -16,10 +16,8 @@ from users.models import User
 class UserMessageCreateTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.user_uuid = uuid.uuid4()
-        self.chat_room_uuid = uuid.uuid4()
         self.user = User.objects.create(
-            uuid=self.user_uuid,
+            uuid=uuid.uuid4(),
             username="test",
             email="test@example.com",
             profile_image="test",
@@ -28,7 +26,7 @@ class UserMessageCreateTest(TestCase):
             is_superuser=False,
         )
         self.chat_room = ChatRoom.objects.create(
-            chat_room_uuid=self.chat_room_uuid,
+            chat_room_uuid=uuid.uuid4(),
             chat_room_name="test",
             user=self.user,
         )
@@ -45,7 +43,7 @@ class UserMessageCreateTest(TestCase):
         self.refresh_token = str(self.refresh)
         self.client.cookies["access"] = self.access_token
         self.client.cookies["refresh"] = self.refresh_token
-        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.chat_room_uuid})
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.chat_room.chat_room_uuid})
 
     def test_message_send(self):
         response = self.client.post(
@@ -71,3 +69,21 @@ class UserMessageCreateTest(TestCase):
 
         self.assertEqual(UserDialog.objects.count(), 0)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_user_messages(self):
+        self.client.post(
+            path=self.url,
+            data={
+                "message": "first message",
+            },
+            format="json",
+        )
+        self.client.post(
+            path=self.url,
+            data={
+                "message": "second message",
+            },
+            format="json",
+        )
+
+        self.assertEqual(UserDialog.objects.count(), 2)
