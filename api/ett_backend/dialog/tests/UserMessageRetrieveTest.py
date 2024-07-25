@@ -65,10 +65,7 @@ class UserMessageRetrieveTest(TestCase):
 
     def test_user_message_retrieve_failed(self):
         # 다른 사용자가 생성한 채팅방 uuid를 제공한 경우
-        self.url = reverse(
-            "user_message",
-            kwargs={"chat_room_uuid": self.other_user_chat_room.chat_room_uuid}
-        )
+        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.other_user_chat_room.chat_room_uuid})
         response = self.client.get(path=self.url)
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

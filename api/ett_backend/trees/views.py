@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
-from dialog.models import AIDialog, UserDialog
+from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
@@ -24,13 +24,14 @@ from users.serializers import EmptySerializer
 class TreeCreateView(CreateAPIView):
     serializer_class = EmptySerializer
     permission_classes = [IsAuthenticated]
+    MAX_TREE_COUNT = 9
 
     def create(self, request, *args, **kwargs):
         user = request.user
 
         forest = get_object_or_404(Forest, user=user)
         tree_count = TreeDetail.objects.filter(forest=forest).count()
-        if tree_count >= 9:
+        if tree_count >= self.MAX_TREE_COUNT:
             # 사용자의 현재 만들어진 트리의 개수가 9개 이상인 경우
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -40,9 +41,7 @@ class TreeCreateView(CreateAPIView):
                 tree_name=f"My tree ({tree_count + 1})",
                 location=tree_count,  # Tree 개수에 따라 현재 위치 결정
             )
-            new_tree_emotion = TreeEmotion.objects.create(tree=new_tree)
-            new_tree.save()
-            new_tree_emotion.save()
+            _ = TreeEmotion.objects.create(tree=new_tree)
 
         return Response(data={"tree_uuid": new_tree.tree_uuid}, status=status.HTTP_201_CREATED)
 
@@ -137,35 +136,17 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
         tree_uuid = kwargs.get(self.lookup_field)
-        chat_room_uuid = request.data.get("chat_room_uuid")
-
-        # Prefetch 관련 데이터를 한 번에 가져옴
-        chat_room = get_object_or_404(
-            ChatRoom.objects.prefetch_related(
-                Prefetch(
-                    "user_dialog",
-                    queryset=UserDialog.objects.filter(user=request.user).prefetch_related(Prefetch("ai_dialog")),
-                )
-            ),
-            chat_room_uuid=chat_room_uuid,
-            user=request.user,
-        )
-
-        # user_dialog를 찾아봄
-        user_dialog = getattr(chat_room, "user_dialog", None)
-        if not user_dialog or user_dialog.user != request.user:
-            return Response(data={"message": "UserDialog not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        # ai_dialog를 찾아봄
-        ai_dialog = getattr(user_dialog, "ai_dialog", None)
-        if not ai_dialog:
-            return Response(data={"message": "AIDialog not found"}, status=status.HTTP_404_NOT_FOUND)
+        message_uuid = request.data.get("message_uuid")
+        ai_dialog = get_object_or_404(AIDialog.objects.filter(message_uuid=message_uuid))
 
         # 해당 chat_room에 대해 이미 AI 응답이 Tree에 반영되었다면
         if ai_dialog.applied_state:
             return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ai_emotion_analysis = get_object_or_404(
+            AIEmotionalAnalysis.objects.filter(ai_dialog__message_uuid=message_uuid)
+        )
 
         # tree와 tree_emotion을 함께 찾아봄
         tree_emotion = (
@@ -177,7 +158,14 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
             return Response(data={"message": "tree emotion not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # serializer를 사용하여 데이터 업데이트
-        serializer = TreeEmotionUpdateSerializer(instance=tree_emotion, data=request.data, partial=partial)
+        emotion_data = {
+            "happiness": ai_emotion_analysis.happiness,
+            "sadness": ai_emotion_analysis.sadness,
+            "anger": ai_emotion_analysis.anger,
+            "worry": ai_emotion_analysis.worry,
+            "indifference": ai_emotion_analysis.indifference,
+        }
+        serializer = TreeEmotionUpdateSerializer(instance=tree_emotion, data=emotion_data)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
 
