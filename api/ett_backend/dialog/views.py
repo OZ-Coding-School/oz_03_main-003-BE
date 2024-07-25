@@ -53,12 +53,12 @@ class AIMessageView(RetrieveAPIView):
         if not message_uuid:
             return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_dialog = UserDialog.objects.filter(
-            chat_room__chat_room_uuid=chat_room_uuid, message_uuid=message_uuid, user=request.user
-        ).first()
-
-        if not user_dialog:
-            return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
+        user_dialog = get_object_or_404(
+            UserDialog,
+            chat_room__chat_room_uuid=chat_room_uuid,
+            message_uuid=message_uuid,
+            user=request.user
+        )
 
         model = GeminiModel().set_model()
         response = model.generate_content(str(user_dialog.message))
@@ -77,11 +77,11 @@ class AIMessageView(RetrieveAPIView):
 
         # AIDialog instance 생성
         with transaction.atomic():
-            ai_dialog = AIDialog.objects.create(
-                user_dialog=user_dialog, message=structured_response["message"], applied_state=False
+            ai_dialog, created = AIDialog.objects.update_or_create(
+                user_dialog=user_dialog,
+                defaults={"message": structured_response["message"], "applied_state": False}
             )
-
-            ai_emotional_analysis, _ = AIEmotionalAnalysis.objects.update_or_create(
+            AIEmotionalAnalysis.objects.update_or_create(
                 ai_dialog=ai_dialog,
                 defaults={
                     "happiness": structured_response["sentiments"].get("happiness", 0.0),
@@ -89,11 +89,8 @@ class AIMessageView(RetrieveAPIView):
                     "sadness": structured_response["sentiments"].get("sadness", 0.0),
                     "worry": structured_response["sentiments"].get("worry", 0.0),
                     "indifference": structured_response["sentiments"].get("indifference", 0.0),
-                },
+                }
             )
-
-            ai_dialog.save()
-            ai_emotional_analysis.save()
 
         serializer = self.get_serializer(ai_dialog)
         return Response(
