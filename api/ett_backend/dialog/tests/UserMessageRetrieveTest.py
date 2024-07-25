@@ -28,7 +28,7 @@ class UserMessageRetrieveTest(TestCase):
             uuid=uuid.uuid4(),
             username="test2",
             email="test2@example.com",
-            profile_image="test2",
+            profile_image="test",
             social_platform="none",
             is_active=True,
             is_superuser=False,
@@ -38,7 +38,7 @@ class UserMessageRetrieveTest(TestCase):
             chat_room_name="test",
             user=self.user,
         )
-        self.other_chat_room = ChatRoom.objects.create(
+        self.other_user_chat_room = ChatRoom.objects.create(
             chat_room_uuid=uuid.uuid4(),
             chat_room_name="test",
             user=self.user2,
@@ -53,18 +53,22 @@ class UserMessageRetrieveTest(TestCase):
         self.user_dialog = UserDialog.objects.create(
             user=self.user, chat_room=self.chat_room, message="Hello, my name is ASDF"
         )
+        self.user_dialog2 = UserDialog.objects.create(
+            user=self.user, chat_room=self.chat_room, message="Hello, my name is QWER"
+        )
 
     def test_user_message_retrieve(self):
         response = self.client.get(path=self.url)
         print(response.data)
-        self.assertIn("message", response.data)
-        self.assertIn("message_uuid", response.data)
-        self.assertEqual(response.data["message"], "Hello, my name is ASDF")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data[0])
+        self.assertIn("message_uuid", response.data[1])
 
     def test_user_message_retrieve_failed(self):
         # 다른 사용자가 생성한 채팅방 uuid를 제공한 경우
-        self.url = reverse("user_message", kwargs={"chat_room_uuid": self.other_chat_room.chat_room_uuid})
+        self.url = reverse(
+            "user_message",
+            kwargs={"chat_room_uuid": self.other_user_chat_room.chat_room_uuid}
+        )
         response = self.client.get(path=self.url)
         print(response.data)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

@@ -9,7 +9,8 @@ from users.models import User
 
 class UserDialog(TimeStampModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    chat_room = models.OneToOneField(ChatRoom, on_delete=models.CASCADE, null=True, related_name="user_dialog")
+    chat_room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name="user_dialog")
+    # 채팅방 삭제 시 자동으로 해당 채팅방에 묶여있던 사용자 메세지 삭제 -> AI 메세지 삭제 -> AI 감정 데이터 삭제
 
     message_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     message = models.TextField()
