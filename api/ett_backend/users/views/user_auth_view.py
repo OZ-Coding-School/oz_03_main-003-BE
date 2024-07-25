@@ -104,7 +104,10 @@ class UserDeleteView(generics.GenericAPIView):
             with transaction.atomic():
                 user.delete()
                 refresh_token.blacklist()
-            return Response(data={"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            response = Response(status=status.HTTP_204_NO_CONTENT)
+            response.delete_cookie("access", domain=os.getenv("COOKIE_DOMAIN"), path="/")
+            response.delete_cookie("refresh", domain=os.getenv("COOKIE_DOMAIN"), path="/")
+            return response
         except (InvalidToken, TokenError) as e:
             return Response(
                 data={"message": "Invalid refresh token", "error": str(e)}, status=status.HTTP_400_BAD_REQUEST
