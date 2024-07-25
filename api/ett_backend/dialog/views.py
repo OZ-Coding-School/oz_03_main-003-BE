@@ -27,9 +27,7 @@ class UserMessageView(ListCreateAPIView):
 
         with transaction.atomic():
             user_dialog = UserDialog.objects.create(
-                user=request.user,
-                chat_room=chat_room,
-                message=serializer.validated_data["message"]
+                user=request.user, chat_room=chat_room, message=serializer.validated_data["message"]
             )
             user_dialog.save()
         return Response(data={"message_uuid": str(user_dialog.message_uuid)}, status=status.HTTP_201_CREATED)
@@ -37,9 +35,7 @@ class UserMessageView(ListCreateAPIView):
     def get(self, request, *args, **kwargs):
         chat_room_uuid = kwargs.get("chat_room_uuid")
         user_dialog = UserDialog.objects.filter(
-            chat_room__chat_room_uuid=chat_room_uuid,
-            chat_room__user=request.user,
-            user=request.user
+            chat_room__chat_room_uuid=chat_room_uuid, chat_room__user=request.user, user=request.user
         )
         if not user_dialog:
             return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -57,14 +53,12 @@ class AIMessageView(RetrieveAPIView):
         if not message_uuid:
             return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_dialog = UserDialog.objects.filter(
+        user_dialog = get_object_or_404(
+            UserDialog,
             chat_room__chat_room_uuid=chat_room_uuid,
             message_uuid=message_uuid,
             user=request.user
-        ).first()
-
-        if not user_dialog:
-            return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
+        )
 
         model = GeminiModel().set_model()
         response = model.generate_content(str(user_dialog.message))
@@ -83,13 +77,11 @@ class AIMessageView(RetrieveAPIView):
 
         # AIDialog instance 생성
         with transaction.atomic():
-            ai_dialog = AIDialog.objects.create(
+            ai_dialog, created = AIDialog.objects.update_or_create(
                 user_dialog=user_dialog,
-                message=structured_response["message"],
-                applied_state=False
+                defaults={"message": structured_response["message"], "applied_state": False}
             )
-
-            ai_emotional_analysis, _ = AIEmotionalAnalysis.objects.update_or_create(
+            AIEmotionalAnalysis.objects.update_or_create(
                 ai_dialog=ai_dialog,
                 defaults={
                     "happiness": structured_response["sentiments"].get("happiness", 0.0),
@@ -100,9 +92,6 @@ class AIMessageView(RetrieveAPIView):
                 }
             )
 
-            ai_dialog.save()
-            ai_emotional_analysis.save()
-
         serializer = self.get_serializer(ai_dialog)
         return Response(
             data=serializer.data,
@@ -110,31 +99,54 @@ class AIMessageView(RetrieveAPIView):
         )
 
 
-class DialogView(RetrieveAPIView):
+class DialogListView(RetrieveAPIView):
     serializer_class = DialogSerializer
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         chat_room_uuid = kwargs.get("chat_room_uuid")
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
+        user_dialogs = UserDialog.objects.filter(chat_room=chat_room).select_related("ai_dialog")
+        response_data = []
 
-        user_dialog = get_object_or_404(UserDialog, user=request.user, chat_room=chat_room)
-        ai_dialog = get_object_or_404(AIDialog, user_dialog=user_dialog)
-        ai_emotional_analysis = get_object_or_404(AIEmotionalAnalysis, ai_dialog=ai_dialog)
-
-        response_data = {
-            "user": {"message_uuid": str(user_dialog.message_uuid), "message": user_dialog.message},
-            "ai": {
-                "message_uuid": str(ai_dialog.message_uuid),
-                "message": ai_dialog.message,
-                "sentiments": {
-                    "happiness": ai_emotional_analysis.happiness,
-                    "anger": ai_emotional_analysis.anger,
-                    "sadness": ai_emotional_analysis.sadness,
-                    "worry": ai_emotional_analysis.worry,
-                    "indifference": ai_emotional_analysis.indifference,
-                },
-            },
-        }
+        for user_dialog in user_dialogs:
+            ai_dialog = AIDialog.objects.filter(user_dialog=user_dialog).first()
+            if ai_dialog:
+                ai_emotional_analysis = AIEmotionalAnalysis.objects.filter(ai_dialog=ai_dialog).first()
+                if ai_emotional_analysis:
+                    response_data.append(
+                        {
+                            "user": {"message_uuid": str(user_dialog.message_uuid), "message": user_dialog.message},
+                            "ai": {
+                                "message_uuid": str(ai_dialog.message_uuid),
+                                "message": ai_dialog.message,
+                                "sentiments": {
+                                    "happiness": ai_emotional_analysis.happiness,
+                                    "anger": ai_emotional_analysis.anger,
+                                    "sadness": ai_emotional_analysis.sadness,
+                                    "worry": ai_emotional_analysis.worry,
+                                    "indifference": ai_emotional_analysis.indifference,
+                                },
+                            },
+                        }
+                    )
+                else:
+                    response_data.append(
+                        {
+                            "user": {"message_uuid": str(user_dialog.message_uuid), "message": user_dialog.message},
+                            "ai": {
+                                "message_uuid": str(ai_dialog.message_uuid),
+                                "message": ai_dialog.message,
+                                "sentiments": {},
+                            },
+                        }
+                    )
+            else:
+                response_data.append(
+                    {
+                        "user": {"message_uuid": str(user_dialog.message_uuid), "message": user_dialog.message},
+                        "ai": {},
+                    }
+                )
 
         return Response(data=response_data, status=status.HTTP_200_OK)
