@@ -1,7 +1,15 @@
+from uuid import UUID
+
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveUpdateAPIView,
+    RetrieveUpdateDestroyAPIView,
+    UpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -96,6 +104,32 @@ class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
             return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class TreeUpdateAdminView(UpdateAPIView):
+    serializer_class = TreeUpdateSerializer
+    permission_classes = [IsAdminUser]
+    queryset = TreeDetail.objects.all()
+    lookup_field = "tree_uuid"
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        tree_uuid = kwargs.get(self.lookup_field)
+        user_uuid = request.data.get("user_uuid")
+        try:
+            if not user_uuid or not isinstance(UUID(user_uuid, version=4), UUID):
+                raise ValueError
+        except ValueError:
+            return Response(
+                data={"message": "user_uuid is required or Invalid UUID"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user__uuid=user_uuid).first()
+        if not tree:
+            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(instance=tree, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(data={"message": "tree updated"}, status=status.HTTP_200_OK)
 
 
 class TreeEmotionListView(ListAPIView):
@@ -196,4 +230,20 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
         ai_dialog.applied_state = True
         ai_dialog.save()
 
+        return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)
+
+
+class TreeEmotionUpdateAdminView(UpdateAPIView):
+    serializer_class = TreeEmotionUpdateSerializer
+    permission_classes = [IsAdminUser]
+    lookup_field = "tree_uuid"
+    queryset = TreeEmotion.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree_emotion = get_object_or_404(TreeEmotion.objects.filter(tree__tree_uuid=tree_uuid))
+        serializer = self.get_serializer(tree_emotion, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
         return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)

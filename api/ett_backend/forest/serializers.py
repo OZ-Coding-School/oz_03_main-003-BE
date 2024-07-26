@@ -29,6 +29,14 @@ class ForestCreateSerializer(serializers.ModelSerializer):
         fields = ["user_uuid"]
 
 
+class ForestListSerializer(serializers.ModelSerializer):
+    user_uuid = serializers.UUIDField(source="user.uuid")
+
+    class Meta:
+        model = Forest
+        fields = ["user_uuid", "forest_uuid", "forest_level"]
+
+
 class ForestRetreiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Forest

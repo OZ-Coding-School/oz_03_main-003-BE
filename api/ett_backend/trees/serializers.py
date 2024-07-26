@@ -42,6 +42,8 @@ class TreeSerializer(serializers.ModelSerializer):
 class TreeUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
+        if "tree_name" in attrs and attrs["tree_name"] == "":
+            raise serializers.ValidationError("tree_name must not empty")
         if "tree_level" in attrs and attrs["tree_level"] < 0:
             raise serializers.ValidationError("tree_level must be greater than or equal to 0")
         if "location" in attrs and attrs["location"] < 0:
