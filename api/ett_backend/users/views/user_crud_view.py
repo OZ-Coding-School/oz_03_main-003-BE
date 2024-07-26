@@ -1,11 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.generics import ListAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 
 from users.models import User
-from users.serializers import UserProfileSerializer, UserSerializer, EmptySerializer
+from users.serializers import EmptySerializer, UserProfileSerializer, UserSerializer
 from users.utils import IsAdminUser
 
 
@@ -32,6 +32,7 @@ class UserView(ListAPIView):
         users = User.objects.all()
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class SwitchUserAuthorizationView(UpdateAPIView):
     serializer_class = EmptySerializer

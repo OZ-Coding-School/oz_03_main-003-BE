@@ -1,20 +1,17 @@
 import uuid
 
-from rest_framework.test import APITestCase, APIClient
+from django.urls import reverse
+from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
-from django.urls import reverse
 
 
 class SwitchUserAuthorizationTest(APITestCase):
     def setUp(self):
         # Given
         self.client = APIClient()
-        self.admin_user = User.objects.create_superuser(
-            email="admin@localhost",
-            password="admin"
-        )
+        self.admin_user = User.objects.create_superuser(email="admin@localhost", password="admin")
         self.user = User.objects.create_user(
             uuid=uuid.uuid4(),
             email="user@localhost",
