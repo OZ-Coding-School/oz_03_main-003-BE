@@ -119,3 +119,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "uuid",
+            "username",
+            "email",
+            "profile_image",
+            "social_platform",
+            "is_active",
+            "is_superuser",
+            "last_login",
+            "created_at",
+            "updated_at",
+        ]

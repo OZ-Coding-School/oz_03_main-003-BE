@@ -114,18 +114,3 @@ class UserDeleteView(generics.GenericAPIView):
             )
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class UserProfileView(generics.GenericAPIView):
-    serializer_class = UserProfileSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(instance=request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(instance=request.user, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response({"message": "Successfully updated user data"}, status=status.HTTP_200_OK)

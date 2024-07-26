@@ -5,6 +5,7 @@ import pytz
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import timezone
+from rest_framework.permissions import BasePermission
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -144,3 +145,13 @@ class EmotreeAuthClass:
         new_access_token = token.access_token
         new_access_token["user_uuid"] = token["user_uuid"]
         return str(new_access_token)
+
+
+class IsAdminUser(BasePermission):
+    """
+    Redefine rest_framework.permissions.IsAdminUser
+    Allows access only to admin users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_superuser and request.user.is_active)

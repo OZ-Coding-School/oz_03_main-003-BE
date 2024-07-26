@@ -2,7 +2,7 @@ import json
 
 from django.db import transaction
 from rest_framework import status
-from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, get_object_or_404
+from rest_framework.generics import CreateAPIView, ListCreateAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -43,22 +43,22 @@ class UserMessageView(ListCreateAPIView):
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class AIMessageView(RetrieveAPIView):
+class AIMessageView(CreateAPIView):
     serializer_class = AIMessageSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         chat_room_uuid = kwargs.get("chat_room_uuid")
         message_uuid = request.data.get("message_uuid")
         if not message_uuid:
             return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_dialog = get_object_or_404(
-            UserDialog,
-            chat_room__chat_room_uuid=chat_room_uuid,
-            message_uuid=message_uuid,
-            user=request.user
-        )
+        try:
+            user_dialog = UserDialog.objects.get(
+                chat_room__chat_room_uuid=chat_room_uuid, message_uuid=message_uuid, user=request.user
+            )
+        except UserDialog.DoesNotExist:
+            return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
 
         model = GeminiModel().set_model()
         response = model.generate_content(str(user_dialog.message))
@@ -78,8 +78,7 @@ class AIMessageView(RetrieveAPIView):
         # AIDialog instance 생성
         with transaction.atomic():
             ai_dialog, created = AIDialog.objects.update_or_create(
-                user_dialog=user_dialog,
-                defaults={"message": structured_response["message"], "applied_state": False}
+                user_dialog=user_dialog, defaults={"message": structured_response["message"], "applied_state": False}
             )
             AIEmotionalAnalysis.objects.update_or_create(
                 ai_dialog=ai_dialog,
@@ -89,7 +88,7 @@ class AIMessageView(RetrieveAPIView):
                     "sadness": structured_response["sentiments"].get("sadness", 0.0),
                     "worry": structured_response["sentiments"].get("worry", 0.0),
                     "indifference": structured_response["sentiments"].get("indifference", 0.0),
-                }
+                },
             )
 
         serializer = self.get_serializer(ai_dialog)
