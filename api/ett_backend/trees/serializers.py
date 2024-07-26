@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from trees.models import TreeDetail, TreeEmotion
+from users.models import User
 
 
 class TreeEmotionSerializer(serializers.ModelSerializer):
@@ -37,6 +38,16 @@ class TreeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreeDetail
         fields = ["tree_uuid", "tree_name", "tree_level", "location"]
+
+
+class TreeListAdminSerializer(serializers.ModelSerializer):
+    user_uuid = serializers.UUIDField(source="forest.user.uuid")
+    tree_detail = TreeSerializer(source="*")
+
+    class Meta:
+        model = TreeDetail
+        fields = ["user_uuid", "tree_detail"]
+
 
 
 class TreeUpdateSerializer(serializers.ModelSerializer):

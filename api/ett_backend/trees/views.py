@@ -22,7 +22,7 @@ from trees.serializers import (
     TreeEmotionSerializer,
     TreeEmotionUpdateSerializer,
     TreeSerializer,
-    TreeUpdateSerializer,
+    TreeUpdateSerializer, TreeListAdminSerializer,
 )
 from users.serializers import EmptySerializer
 from users.utils import IsAdminUser
@@ -66,7 +66,7 @@ class TreeListView(ListAPIView):
 
 
 class TreeListAdminView(ListAPIView):
-    serializer_class = TreeSerializer
+    serializer_class = TreeListAdminSerializer
     permission_classes = [IsAdminUser]
     queryset = TreeDetail.objects.all()
 
