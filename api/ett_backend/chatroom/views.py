@@ -10,6 +10,7 @@ from chatroom.models import ChatRoom
 from chatroom.serializers import ChatRoomCreateSerializer, ChatRoomSerializer, ChatRoomUpdateSerializer
 from trees.models import TreeDetail
 from users.serializers import EmptySerializer
+from users.utils import IsAdminUser
 
 
 class ChatRoomCreateView(CreateAPIView):
@@ -43,12 +44,18 @@ class ChatRoomListView(ListAPIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        if user.is_superuser:
-            return super().get(request, *args, **kwargs)
-
         chat_rooms = ChatRoom.objects.filter(user=user)
         serializer = ChatRoomSerializer(chat_rooms, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class ChatRoomListForAdminView(ListAPIView):
+    serializer_class = ChatRoomSerializer
+    permission_classes = [IsAdminUser]
+    queryset = ChatRoom.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class ChatRoomRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):

@@ -2,8 +2,10 @@ from django.urls import path
 
 from trees.views import (
     TreeCreateView,
+    TreeEmotionListAdminView,
     TreeEmotionListView,
     TreeEmotionRetrieveUpdateView,
+    TreeListAdminView,
     TreeListView,
     TreeRetrieveUpdateDeleteView,
 )
@@ -16,4 +18,6 @@ urlpatterns = [
     path(
         "/emotion/<uuid:tree_uuid>", TreeEmotionRetrieveUpdateView.as_view(), name="tree_emotion_retrieve_update_view"
     ),
+    path("/admin", TreeListAdminView.as_view(), name="admin_tree_list_view"),
+    path("/admin/emotion", TreeEmotionListAdminView.as_view(), name="admin_tree_emotion_list_view"),
 ]
