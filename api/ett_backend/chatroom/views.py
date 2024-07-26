@@ -42,7 +42,11 @@ class ChatRoomListView(ListAPIView):
     queryset = ChatRoom.objects.all()
 
     def get(self, request, *args, **kwargs):
-        chat_rooms = ChatRoom.objects.filter(user=request.user)
+        user = request.user
+        if user.is_superuser:
+            return super().get(request, *args, **kwargs)
+
+        chat_rooms = ChatRoom.objects.filter(user=user)
         serializer = ChatRoomSerializer(chat_rooms, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
