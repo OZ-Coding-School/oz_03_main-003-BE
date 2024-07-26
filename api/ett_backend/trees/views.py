@@ -1,13 +1,11 @@
 from django.db import transaction
-from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from chatroom.models import ChatRoom
-from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
+from dialog.models import AIDialog, AIEmotionalAnalysis
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
 from trees.serializers import (
@@ -19,6 +17,7 @@ from trees.serializers import (
     TreeUpdateSerializer,
 )
 from users.serializers import EmptySerializer
+from users.utils import IsAdminUser
 
 
 class TreeCreateView(CreateAPIView):
@@ -53,12 +52,18 @@ class TreeListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         user = request.user
-        if user.is_superuser:
-            return super().list(request, *args, **kwargs)
-
         forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
         serializer = self.get_serializer(forest.related_tree.all(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TreeListAdminView(ListAPIView):
+    serializer_class = TreeSerializer
+    permission_classes = [IsAdminUser]
+    queryset = TreeDetail.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
@@ -101,9 +106,6 @@ class TreeEmotionListView(ListAPIView):
     def list(self, request, *args, **kwargs):
         user = request.user
 
-        if user.is_superuser:
-            return super().list(request, *args, **kwargs)
-
         # User가 소유한 Forest 데이터를 가져온다
         forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
         tree_details = forest.related_tree.all()
@@ -121,6 +123,20 @@ class TreeEmotionListView(ListAPIView):
         else:
             serializer = TreeEmotionListSerializer(tree_emotions, many=True)
 
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class TreeEmotionListAdminView(ListAPIView):
+    serializer_class = TreeEmotionListSerializer
+    permission_classes = [IsAdminUser]
+    queryset = TreeEmotion.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        # 만약 query param으로 detail_sentiment값이 들어왔다면
+        if request.query_params.get("detail_sentiment"):
+            serializer = FilteredTreeEmotionSerializer(self.get_queryset(), many=True, context={"request": request})
+        else:
+            serializer = TreeEmotionListSerializer(self.get_queryset(), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
