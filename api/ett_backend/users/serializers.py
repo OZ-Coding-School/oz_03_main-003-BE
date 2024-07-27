@@ -89,36 +89,34 @@ class UserDeleteSerializer(serializers.Serializer):
         return attrs
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False)
     profile_image = serializers.ImageField(required=False)
+
+    def validate(self, attrs):
+        if "username" in attrs and attrs["username"] == "":
+            # 추후 username을 admin 관련한 이름으로 바꾸는 경우 에러 발생시키는 로직 추가
+            raise serializers.ValidationError({"message": "User name is missing or invalid"})
+        return attrs
 
     def update(self, instance, validated_data):
         profile_image_file = validated_data.pop("profile_image", None)
         if profile_image_file:
             s3instance = S3Instance().get_s3_instance()
             profile_image_url = S3Instance.upload_file(s3instance, profile_image_file, instance.uuid)
-            instance.profile_image = profile_image_url
+            validated_data["profile_image"] = profile_image_url
 
         # User data update
         with transaction.atomic():
-            for attr, value in validated_data.items():
-                setattr(instance, attr, value)
+            instance.username = validated_data.get("username", instance.username)
+            instance.profile_image = validated_data.get("profile_image", instance.profile_image)
             instance.save()
+
         return instance
 
     class Meta:
         model = User
-        fields = [
-            "uuid",
-            "username",
-            "email",
-            "profile_image",
-            "social_platform",
-            "is_active",
-            "is_superuser",
-            "created_at",
-            "updated_at",
-        ]
+        fields = ["username", "profile_image"]
 
 
 class UserSerializer(serializers.ModelSerializer):
