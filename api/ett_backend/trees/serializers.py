@@ -49,7 +49,6 @@ class TreeListAdminSerializer(serializers.ModelSerializer):
         fields = ["user_uuid", "tree_detail"]
 
 
-
 class TreeUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):

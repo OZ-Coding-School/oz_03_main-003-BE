@@ -1,13 +1,13 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
-from rest_framework.generics import ListAPIView, UpdateAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, UpdateAPIView
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from users.models import User
 from users.serializers import EmptySerializer, UserProfileSerializer, UserSerializer
 from users.utils import IsAdminUser
-from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class UserProfileView(RetrieveUpdateAPIView):
