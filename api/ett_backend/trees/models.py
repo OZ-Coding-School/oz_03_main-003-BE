@@ -21,11 +21,11 @@ class TreeDetail(TimeStampModel):
 class TreeEmotion(TimeStampModel):
     tree = models.OneToOneField(TreeDetail, on_delete=models.CASCADE)
 
-    happiness = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 행복도
-    anger = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 화남
-    sadness = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 슬픔
-    worry = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 걱정
-    indifference = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)  # 무관심
+    happiness = models.DecimalField(max_digits=4, decimal_places=1, default=0.0)  # 행복도
+    anger = models.DecimalField(max_digits=4, decimal_places=1, default=0.0)  # 화남
+    sadness = models.DecimalField(max_digits=4, decimal_places=1, default=0.0)  # 슬픔
+    worry = models.DecimalField(max_digits=4, decimal_places=1, default=0.0)  # 걱정
+    indifference = models.DecimalField(max_digits=4, decimal_places=1, default=0.0)  # 무관심
 
     class Meta:
         db_table = "tree_emotion"

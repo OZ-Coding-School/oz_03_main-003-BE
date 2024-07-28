@@ -73,16 +73,26 @@ class TreeUpdateSerializer(serializers.ModelSerializer):
 class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
-        if "happiness" in attrs and attrs["happiness"] < 0:
-            raise serializers.ValidationError("happiness must be greater than or equal to 0")
-        if "anger" in attrs and attrs["anger"] < 0:
-            raise serializers.ValidationError("anger must be greater than or equal to 0")
-        if "sadness" in attrs and attrs["sadness"] < 0:
-            raise serializers.ValidationError("sadness must be greater than or equal to 0")
-        if "worry" in attrs and attrs["worry"] < 0:
-            raise serializers.ValidationError("worry must be greater than or equal to 0")
-        if "indifference" in attrs and attrs["indifference"] < 0:
-            raise serializers.ValidationError("indifference must be greater than or equal to 0")
+        if "happiness" in attrs and (attrs["happiness"] < 0 or attrs["happiness"] > 999.9):
+            raise serializers.ValidationError(
+                "happiness must be greater than or equal to 0, less than or equal to 999.9"
+            )
+        if "anger" in attrs and (attrs["anger"] < 0 or attrs["anger"] > 999.9):
+            raise serializers.ValidationError(
+                "anger must be greater than or equal to 0 and less than or equal to 999.9"
+            )
+        if "sadness" in attrs and (attrs["sadness"] < 0 or attrs["sadness"] > 999.9):
+            raise serializers.ValidationError(
+                "sadness must be greater than or equal to 0 and less than or equal to 999.9"
+            )
+        if "worry" in attrs and (attrs["worry"] < 0 or attrs["worry"] > 999.9):
+            raise serializers.ValidationError(
+                "worry must be greater than or equal to 0 and less than or equal to 999.9"
+            )
+        if "indifference" in attrs and (attrs["indifference"] < 0 or attrs["indifference"] > 999.9):
+            raise serializers.ValidationError(
+                "indifference must be greater than or equal to 0 and less than or equal to 999.9"
+            )
         return attrs
 
     def update(self, instance, validated_data):
