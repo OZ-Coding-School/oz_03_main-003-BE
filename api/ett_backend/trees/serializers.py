@@ -3,6 +3,8 @@ from rest_framework import serializers
 from trees.models import TreeDetail, TreeEmotion
 from users.models import User
 
+MAX_EMOTION_VALUE = 999.9
+
 
 class TreeEmotionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,34 +75,27 @@ class TreeUpdateSerializer(serializers.ModelSerializer):
 class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
-        if "happiness" in attrs and (attrs["happiness"] < 0 or attrs["happiness"] > 999.9):
-            raise serializers.ValidationError(
-                "happiness must be greater than or equal to 0, less than or equal to 999.9"
-            )
-        if "anger" in attrs and (attrs["anger"] < 0 or attrs["anger"] > 999.9):
-            raise serializers.ValidationError(
-                "anger must be greater than or equal to 0 and less than or equal to 999.9"
-            )
-        if "sadness" in attrs and (attrs["sadness"] < 0 or attrs["sadness"] > 999.9):
-            raise serializers.ValidationError(
-                "sadness must be greater than or equal to 0 and less than or equal to 999.9"
-            )
-        if "worry" in attrs and (attrs["worry"] < 0 or attrs["worry"] > 999.9):
-            raise serializers.ValidationError(
-                "worry must be greater than or equal to 0 and less than or equal to 999.9"
-            )
-        if "indifference" in attrs and (attrs["indifference"] < 0 or attrs["indifference"] > 999.9):
-            raise serializers.ValidationError(
-                "indifference must be greater than or equal to 0 and less than or equal to 999.9"
-            )
+        for emotion in ["happiness", "anger", "sadness", "worry", "indifference"]:
+            if emotion in attrs:
+                value = attrs[emotion]
+                if value < 0 or value > MAX_EMOTION_VALUE:
+                    raise serializers.ValidationError(
+                        f"{emotion} must be greater than or equal to 0 and less than or equal to {MAX_EMOTION_VALUE}"
+                    )
         return attrs
 
     def update(self, instance, validated_data):
-        instance.happiness = validated_data.get("happiness", instance.happiness)
-        instance.anger = validated_data.get("anger", instance.anger)
-        instance.sadness = validated_data.get("sadness", instance.sadness)
-        instance.worry = validated_data.get("worry", instance.worry)
-        instance.indifference = validated_data.get("indifference", instance.indifference)
+        def update_emotion(_emotion, _increment):
+            # 기존 값 + 새로 들어온 값 전체적으로 업데이트
+            new_value = getattr(instance, _emotion) + _increment
+            return min(new_value, MAX_EMOTION_VALUE)
+
+        emotions = ["happiness", "anger", "sadness", "worry", "indifference"]
+
+        for emotion in emotions:
+            increment = validated_data.get(emotion, getattr(instance, emotion))
+            setattr(instance, emotion, update_emotion(emotion, increment))
+
         instance.save()
         return instance
 

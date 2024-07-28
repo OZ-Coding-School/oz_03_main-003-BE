@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import generics, status
-from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, UpdateAPIView
+from rest_framework import status
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -27,15 +27,35 @@ class UserProfileView(RetrieveUpdateAPIView):
         return Response({"message": "Successfully updated user data"}, status=status.HTTP_200_OK)
 
 
-class UserUpdateAdminView(UpdateAPIView):
-    serializer_class = UserProfileSerializer
+class UserRetrieveUpdateDeleteAdminView(RetrieveUpdateDestroyAPIView):
+    serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
+    lookup_field = "user_uuid"
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request, *args, **kwargs):
+        user_uuid = kwargs.get(self.lookup_field)
+        user = get_object_or_404(User, uuid=user_uuid)
+        serializer = self.get_serializer(instance=user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        pass
+        partial = kwargs.pop("partial", False)
+        user_uuid = kwargs.get(self.lookup_field)
+        user = get_object_or_404(User, uuid=user_uuid)
+        serializer = UserProfileSerializer(instance=user, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({"message": "Successfully updated user data"}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        user_uuid = kwargs.get(self.lookup_field)
+        user = get_object_or_404(User, uuid=user_uuid)
+        self.perform_destroy(instance=user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserViewForAdmin(ListAPIView):
+class UserListForAdmin(ListAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
 
