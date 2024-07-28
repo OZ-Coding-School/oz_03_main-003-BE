@@ -203,7 +203,7 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
             return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
 
         ai_emotion_analysis = get_object_or_404(
-            AIEmotionalAnalysis.objects.filter(ai_dialog__message_uuid=message_uuid)
+            AIEmotionalAnalysis.objects.filter(ai_dialog=ai_dialog)
         )
 
         # tree와 tree_emotion을 함께 찾아봄
@@ -221,7 +221,7 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
             "sadness": ai_emotion_analysis.sadness,
             "anger": ai_emotion_analysis.anger,
             "worry": ai_emotion_analysis.worry,
-            "indifference": ai_emotion_analysis.indifference,
+            "indifference": ai_emotion_analysis.indifference
         }
         serializer = TreeEmotionUpdateSerializer(instance=tree_emotion, data=emotion_data)
         serializer.is_valid(raise_exception=True)

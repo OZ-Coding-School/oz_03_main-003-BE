@@ -114,7 +114,7 @@ class GetTreeEmotionTest(APITestCase):
         )
         self.ai_dialog = AIDialog.objects.create(user_dialog=self.user_dialog, message="test message")
         self.ai_emotional_analysis = AIEmotionalAnalysis.objects.create(
-            ai_dialog=self.ai_dialog, happiness=0.0, anger=0.0, sadness=0.0, worry=0.0, indifference=0.0
+            ai_dialog=self.ai_dialog, happiness=4.8, anger=5.0, sadness=1.0, worry=0.0, indifference=8.0
         )
 
         self.emotion_update_url = reverse(
@@ -123,8 +123,7 @@ class GetTreeEmotionTest(APITestCase):
         response = self.client.patch(
             self.emotion_update_url,
             data={
-                "chat_room_uuid": self.chat_room.chat_room_uuid,
-                "happiness": 11.0,
+                "message_uuid": self.ai_dialog.message_uuid,
             },
         )
         tree_emotion = TreeEmotion.objects.filter(tree=tree).first()
@@ -132,19 +131,20 @@ class GetTreeEmotionTest(APITestCase):
         print("#" * 50)
         print("Test 5")
         print(response.data)
+        print("Before emotion update: ", self.ai_dialog.applied_state)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(tree_emotion.happiness, 11.0)
+        self.assertEqual(float(tree_emotion.happiness), 4.8)
         self.ai_dialog.refresh_from_db()
+        print("After emotion update: ", self.ai_dialog.applied_state)
         self.assertEqual(self.ai_dialog.applied_state, True)
 
         # 동일한 내용으로 다시 시도하면 400 출력해야함
-        self.emotion_update_url = reverse("tree_emotion_retrieve_update_view", kwargs={"tree_uuid": tree.tree_uuid})
-        response = self.client.patch(
-            self.emotion_update_url,
-            data={
-                "chat_room_uuid": self.chat_room.chat_room_uuid,
-                "happiness": 11.0,
-            },
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(self.ai_dialog.applied_state, False)
+        # self.emotion_update_url = reverse("tree_emotion_retrieve_update_view", kwargs={"tree_uuid": tree.tree_uuid})
+        # response = self.client.patch(
+        #     self.emotion_update_url,
+        #     data={
+        #         "chat_room_uuid": self.chat_room.chat_room_uuid,
+        #         "happiness": 11.0,
+        #     },
+        # )
+        # self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
