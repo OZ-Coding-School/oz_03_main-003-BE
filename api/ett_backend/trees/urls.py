@@ -8,8 +8,8 @@ from trees.views import (
     TreeEmotionUpdateAdminView,
     TreeListAdminView,
     TreeListView,
+    TreeRetrieveUpdateDeleteAdminView,
     TreeRetrieveUpdateDeleteView,
-    TreeUpdateAdminView,
 )
 
 urlpatterns = [
@@ -21,7 +21,7 @@ urlpatterns = [
         "/emotion/<uuid:tree_uuid>", TreeEmotionRetrieveUpdateView.as_view(), name="tree_emotion_retrieve_update_view"
     ),
     path("/admin", TreeListAdminView.as_view(), name="admin_tree_list_view"),
-    path("/admin/<uuid:tree_uuid>", TreeUpdateAdminView.as_view(), name="admin_tree_update_view"),
+    path("/admin/<uuid:tree_uuid>", TreeRetrieveUpdateDeleteAdminView.as_view(), name="admin_tree_update_delete_view"),
     path("/admin/emotion", TreeEmotionListAdminView.as_view(), name="admin_tree_emotion_list_view"),
     path(
         "/admin/emotion/<uuid:tree_uuid>", TreeEmotionUpdateAdminView.as_view(), name="admin_tree_emotion_update_view"

@@ -27,6 +27,12 @@ class AIMessageSerializer(serializers.ModelSerializer):
         fields = ["sentiments", "message_uuid", "message", "applied_state"]
 
 
+class AIAppliedStateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AIDialog
+        fields = ["applied_state"]
+
+
 class UserMessageSerializer(serializers.ModelSerializer):
     message_uuid = serializers.UUIDField(read_only=True)
 

@@ -107,11 +107,17 @@ class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class TreeUpdateAdminView(UpdateAPIView):
+class TreeRetrieveUpdateDeleteAdminView(RetrieveUpdateDestroyAPIView):
     serializer_class = TreeUpdateSerializer
     permission_classes = [IsAdminUser]
     queryset = TreeDetail.objects.all()
     lookup_field = "tree_uuid"
+
+    def get(self, request, *args, **kwargs):
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
+        serializer = TreeSerializer(tree)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
@@ -131,6 +137,14 @@ class TreeUpdateAdminView(UpdateAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(data={"message": "tree updated"}, status=status.HTTP_200_OK)
+
+    def destroy(self, request, *args, **kwargs):
+        tree_uuid = kwargs.get(self.lookup_field)
+        tree = TreeDetail.objects.filter(tree_uuid=tree_uuid).first()
+        if not tree:
+            return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
+        self.perform_destroy(instance=tree)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TreeEmotionListView(ListAPIView):
@@ -202,9 +216,7 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
         if ai_dialog.applied_state:
             return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
 
-        ai_emotion_analysis = get_object_or_404(
-            AIEmotionalAnalysis.objects.filter(ai_dialog__message_uuid=message_uuid)
-        )
+        ai_emotion_analysis = get_object_or_404(AIEmotionalAnalysis.objects.filter(ai_dialog=ai_dialog))
 
         # tree와 tree_emotion을 함께 찾아봄
         tree_emotion = (
