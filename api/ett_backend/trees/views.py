@@ -13,6 +13,7 @@ from rest_framework.generics import (
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from common.logger import logger
 from dialog.models import AIDialog, AIEmotionalAnalysis
 from forest.models import Forest
 from trees.models import TreeDetail, TreeEmotion
@@ -35,12 +36,14 @@ class TreeCreateView(CreateAPIView):
     MAX_TREE_COUNT = 9
 
     def create(self, request, *args, **kwargs):
+        logger.info("POST /api/tree/new")
         user = request.user
 
         forest = get_object_or_404(Forest, user=user)
         tree_count = TreeDetail.objects.filter(forest=forest).count()
         if tree_count >= self.MAX_TREE_COUNT:
             # 사용자의 현재 만들어진 트리의 개수가 9개 이상인 경우
+            logger.error("/api/tree/new: tree count exceeded")
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         with transaction.atomic():
@@ -60,6 +63,7 @@ class TreeListView(ListAPIView):
     queryset = TreeDetail.objects.all()
 
     def list(self, request, *args, **kwargs):
+        logger.info("GET /api/tree")
         user = request.user
         forest = get_object_or_404(Forest.objects.prefetch_related("related_tree"), user=user)
         serializer = self.get_serializer(forest.related_tree.all(), many=True)
@@ -72,6 +76,7 @@ class TreeListAdminView(ListAPIView):
     queryset = TreeDetail.objects.all()
 
     def list(self, request, *args, **kwargs):
+        logger.info("GET /api/tree/admin")
         return super().list(request, *args, **kwargs)
 
 
@@ -82,6 +87,7 @@ class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = TreeDetail.objects.all()
 
     def get(self, request, *args, **kwargs):
+        logger.info(f"GET /api/tree/{kwargs.get(self.lookup_field)}")
         tree_uuid = kwargs.get(self.lookup_field)
         tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
         serializer = TreeSerializer(tree)
@@ -89,19 +95,28 @@ class TreeRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
+        if partial:
+            logger.info(f"PATCH /api/tree/{kwargs.get(self.lookup_field)}")
+        else:
+            logger.info(f"PUT /api/tree/{kwargs.get(self.lookup_field)}")
+
         tree_uuid = kwargs.get(self.lookup_field)
         tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
         if not tree:
+            logger.error(f"/api/tree/{tree_uuid}: tree not found")
             return Response(status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(instance=tree, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
+        logger.info(f"DELETE /api/tree/{kwargs.get(self.lookup_field)}")
         tree_uuid = kwargs.get(self.lookup_field)
         tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user=request.user).first()
         if not tree:
+            logger.error(f"/api/tree/{tree_uuid}: tree not found")
             return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -114,6 +129,7 @@ class TreeRetrieveUpdateDeleteAdminView(RetrieveUpdateDestroyAPIView):
     lookup_field = "tree_uuid"
 
     def get(self, request, *args, **kwargs):
+        logger.info(f"GET /api/tree/admin/{kwargs.get(self.lookup_field)}")
         tree_uuid = kwargs.get(self.lookup_field)
         tree = get_object_or_404(TreeDetail.objects.select_related("forest"), tree_uuid=tree_uuid)
         serializer = TreeSerializer(tree)
@@ -121,27 +137,38 @@ class TreeRetrieveUpdateDeleteAdminView(RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
+        if partial:
+            logger.info(f"PATCH /api/tree/admin/{kwargs.get(self.lookup_field)}")
+        else:
+            logger.info(f"PUT /api/tree/admin/{kwargs.get(self.lookup_field)}")
+
         tree_uuid = kwargs.get(self.lookup_field)
         user_uuid = request.data.get("user_uuid")
         try:
             if not user_uuid or not isinstance(UUID(user_uuid, version=4), UUID):
                 raise ValueError
         except ValueError:
+            logger.error(f"/api/tree/admin/{tree_uuid}: user_uuid is required or Invalid UUID")
             return Response(
                 data={"message": "user_uuid is required or Invalid UUID"}, status=status.HTTP_400_BAD_REQUEST
             )
+
         tree = TreeDetail.objects.filter(tree_uuid=tree_uuid, forest__user__uuid=user_uuid).first()
         if not tree:
+            logger.error(f"/api/tree/admin/{tree_uuid}: tree not found")
             return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(instance=tree, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(data={"message": "tree updated"}, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
+        logger.info(f"DELETE /api/tree/admin/{kwargs.get(self.lookup_field)}")
         tree_uuid = kwargs.get(self.lookup_field)
         tree = TreeDetail.objects.filter(tree_uuid=tree_uuid).first()
         if not tree:
+            logger.error(f"/api/tree/admin/{tree_uuid}: tree not found")
             return Response(data={"message": "tree not found"}, status=status.HTTP_404_NOT_FOUND)
         self.perform_destroy(instance=tree)
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -153,6 +180,7 @@ class TreeEmotionListView(ListAPIView):
     queryset = TreeEmotion.objects.all()
 
     def list(self, request, *args, **kwargs):
+        logger.info("GET /api/tree/emotion")
         user = request.user
 
         # User가 소유한 Forest 데이터를 가져온다
@@ -161,6 +189,7 @@ class TreeEmotionListView(ListAPIView):
 
         # Forest에 tree가 존재하지 않는 경우 -> json 응답으로 빈 배열 반환
         if not tree_details.exists():
+            logger.info("/api/tree/emotion: tree not found")
             return Response(data=[], status=status.HTTP_200_OK)
 
         # TreeEmotion에서 정방향 참조하여 tree_details에 해당하는 데이터만 가져온다
@@ -181,6 +210,7 @@ class TreeEmotionListAdminView(ListAPIView):
     queryset = TreeEmotion.objects.all()
 
     def list(self, request, *args, **kwargs):
+        logger.info("GET /api/tree/admin/emotion")
         # 만약 query param으로 detail_sentiment값이 들어왔다면
         if request.query_params.get("detail_sentiment"):
             serializer = FilteredTreeEmotionSerializer(self.get_queryset(), many=True, context={"request": request})
@@ -196,9 +226,11 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
     queryset = TreeEmotion.objects.all()
 
     def get(self, request, *args, **kwargs):
+        logger.info(f"GET /api/tree/emotion/<uuid:tree_uuid>")
         tree_uuid = kwargs.get(self.lookup_field)
         tree_emotion = TreeEmotion.objects.select_related("tree").filter(tree__tree_uuid=tree_uuid).first()
         if not tree_emotion:
+            logger.error(f"/api/tree/emotion/<uuid:tree_uuid>: tree not found")
             return Response(data=[], status=status.HTTP_404_NOT_FOUND)
 
         if request.query_params.get("detail_sentiment"):
@@ -208,12 +240,14 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
+        logger.info(f"PUT /api/tree/emotion/<uuid:tree_uuid>")
         tree_uuid = kwargs.get(self.lookup_field)
         message_uuid = request.data.get("message_uuid")
         ai_dialog = get_object_or_404(AIDialog.objects.filter(message_uuid=message_uuid))
 
         # 해당 chat_room에 대해 이미 AI 응답이 Tree에 반영되었다면
         if ai_dialog.applied_state:
+            logger.error(f"/api/tree/emotion/<uuid:tree_uuid>: already applied")
             return Response(data={"message": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
 
         ai_emotion_analysis = get_object_or_404(AIEmotionalAnalysis.objects.filter(ai_dialog=ai_dialog))
@@ -225,6 +259,7 @@ class TreeEmotionRetrieveUpdateView(RetrieveUpdateAPIView):
             .first()
         )
         if not tree_emotion:
+            logger.error(f"/api/tree/emotion/<uuid:tree_uuid>: tree emotion not found")
             return Response(data={"message": "tree emotion not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # serializer를 사용하여 데이터 업데이트
@@ -254,6 +289,11 @@ class TreeEmotionUpdateAdminView(UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
+        if partial:
+            logger.info(f"PATCH /api/tree/admin/emotion/<uuid:tree_uuid>")
+        else:
+            logger.info(f"PUT /api/tree/admin/emotion/<uuid:tree_uuid>")
+
         tree_uuid = kwargs.get(self.lookup_field)
         tree_emotion = get_object_or_404(TreeEmotion.objects.filter(tree__tree_uuid=tree_uuid))
         serializer = self.get_serializer(tree_emotion, data=request.data, partial=partial)

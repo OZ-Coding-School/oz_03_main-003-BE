@@ -1,16 +1,10 @@
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.generics import (
-    CreateAPIView,
-    ListAPIView,
-    RetrieveAPIView,
-    RetrieveUpdateDestroyAPIView,
-    UpdateAPIView,
-)
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateDestroyAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from common.logger import logger
 from forest.models import Forest
 from forest.serializers import (
     ForestCreateSerializer,
@@ -27,6 +21,7 @@ class ForestCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        logger.info("POST /api/forest/new")
         serializer = self.get_serializer(data={"user_uuid": request.user.uuid})
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -43,6 +38,7 @@ class ForestListAdminView(ListAPIView):
     queryset = Forest.objects.all()
 
     def list(self, request, *args, **kwargs):
+        logger.info("GET /api/forest/admin")
         return super().list(request, *args, **kwargs)
 
 
@@ -53,16 +49,20 @@ class ForestRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Forest.objects.all()
 
     def get(self, request, *args, **kwargs):
+        logger.info(f"GET /api/forest")
         forest = Forest.objects.filter(user=request.user).first()
         if not forest:
+            logger.error(f"/api/forest: forest not found")
             return Response({"message": "Forest not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = ForestRetreiveSerializer(forest)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
+        logger.info(f"PUT /api/forest/<uuid:forest_uuid>")
         forest_uuid = kwargs.get(self.lookup_field)
         forest = Forest.objects.filter(forest_uuid=forest_uuid, user=request.user).first()
         if not forest:
+            logger.error(f"/api/forest/<uuid:forest_uuid>: forest not found")
             return Response(data={"message": "forest not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = ForestUpdateSerializer(instance=forest, data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -70,6 +70,7 @@ class ForestRetrieveUpdateDeleteView(RetrieveUpdateDestroyAPIView):
         return Response(data={"message": "Successfully updated"}, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
+        logger.info(f"DELETE /api/forest/<uuid:forest_uuid>")
         forest_uuid = kwargs.get(self.lookup_field)
         forest = get_object_or_404(Forest, forest_uuid=forest_uuid, user=request.user)
         self.perform_destroy(instance=forest)
@@ -83,9 +84,11 @@ class ForestUpdateAdminView(UpdateAPIView):
     lookup_field = "forest_uuid"
 
     def update(self, request, *args, **kwargs):
+        logger.info(f"PUT /api/forest/admin/<uuid:forest_uuid>")
         forest_uuid = kwargs.get(self.lookup_field)
         forest = Forest.objects.filter(forest_uuid=forest_uuid).first()
         if not forest:
+            logger.error(f"/api/forest/admin/<uuid:forest_uuid>: forest not found")
             return Response(data={"message": "forest not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(instance=forest, data=request.data)
         serializer.is_valid(raise_exception=True)
