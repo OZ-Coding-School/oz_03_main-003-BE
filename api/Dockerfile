@@ -41,9 +41,8 @@ RUN python -m venv /py && \
         --no-create-home \
         django-user
 
-#
+# 권한 설정
 RUN chown -R django-user:django-user /ett_backend
-
 
 # 로그 디렉토리 생성 및 권한 설정
 RUN mkdir -p /ett_backend/logs && \
@@ -59,4 +58,4 @@ EXPOSE 8000
 USER django-user
 
 # Django 프로젝트 실행
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "ett_backend.config.asgi:application", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--log-level", "debug", "--access-logfile", "/ett_backend/logs/access.log", "--error-logfile", "/ett_backend/logs/error.log"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "ett_backend.config.asgi:application", "--workers", "3", "--worker-class", "uvicorn.workers.UvicornWorker", "--log-level", "debug", "--access-logfile", "/ett_backend/logs/access.log", "--error-logfile", "/ett_backend/logs/error.log"]

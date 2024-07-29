@@ -17,5 +17,6 @@ services:
       - WERKZEUG_DEBUG_PIN=off
       - TZ="Asia/Seoul"
     command: >
-      sh -c "python manage.py migrate &&
-             gunicorn --bind 0.0.0.0:8000 config.wsgi.application --workers 3 --log-level info"
+      sh -c "mkdir -p /ett_backend/logs &&
+             python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 config.asgi:application --workers 3 --worker-class uvicorn.workers.UvicornWorker --timeout 120 --log-level debug --access-logfile /ett_backend/logs/access.log --error-logfile /ett_backend/logs/error.log"

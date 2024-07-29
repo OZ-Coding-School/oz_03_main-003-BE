@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
+from common.logger import logger
 from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
 from dialog.serializers import AIMessageSerializer, DialogSerializer, UserMessageSerializer
 from gemini.models import GeminiModel
@@ -17,8 +18,10 @@ class UserMessageView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        logger.info("POST /api/message/user/<uuid:chat_room_uuid>")
         chat_room_uuid = kwargs.get("chat_room_uuid")
         if not chat_room_uuid:
+            logger.error("/api/message/user/<uuid:chat_room_uuid>: chat_room_uuid is required")
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid)
 
@@ -33,11 +36,17 @@ class UserMessageView(ListCreateAPIView):
         return Response(data={"message_uuid": str(user_dialog.message_uuid)}, status=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):
+        logger.info("GET /api/message/user/<uuid:chat_room_uuid>")
         chat_room_uuid = kwargs.get("chat_room_uuid")
+        if not chat_room_uuid:
+            logger.error("/api/message/user/<uuid:chat_room_uuid>: chat_room_uuid is required")
+            return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         user_dialog = UserDialog.objects.filter(
             chat_room__chat_room_uuid=chat_room_uuid, chat_room__user=request.user, user=request.user
         )
         if not user_dialog:
+            logger.error("/api/message/user/<uuid:chat_room_uuid>: user dialog not found")
             return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(user_dialog, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
@@ -48,9 +57,15 @@ class AIMessageView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
+        logger.info("POST /api/message/ai/<uuid:chat_room_uuid>")
         chat_room_uuid = kwargs.get("chat_room_uuid")
+        if not chat_room_uuid:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: chat_room_uuid is required")
+            return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         message_uuid = request.data.get("message_uuid")
         if not message_uuid:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: message_uuid is required")
             return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -58,6 +73,7 @@ class AIMessageView(CreateAPIView):
                 chat_room__chat_room_uuid=chat_room_uuid, message_uuid=message_uuid, user=request.user
             )
         except UserDialog.DoesNotExist:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: user dialog not found")
             return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
 
         model = GeminiModel().set_model()
@@ -66,6 +82,7 @@ class AIMessageView(CreateAPIView):
         # Gemini API 응답 데이터를 JSON 형식으로 파싱
         json_str = response._result.candidates[0].content.parts[0].text
         if not json_str:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: Failed to get response from AI")
             return Response(data={"message": "Failed to get response from AI"}, status=status.HTTP_404_NOT_FOUND)
         response_data = json.loads(json_str)
 
@@ -103,7 +120,12 @@ class DialogListView(RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        logger.info("GET /api/dialog/<uuid:chat_room_uuid>")
         chat_room_uuid = kwargs.get("chat_room_uuid")
+        if not chat_room_uuid:
+            logger.error("/api/dialog/<uuid:chat_room_uuid>: chat_room_uuid is required")
+            return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
         user_dialogs = UserDialog.objects.filter(chat_room=chat_room).select_related("ai_dialog")
         response_data = []
