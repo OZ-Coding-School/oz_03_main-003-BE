@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from chatroom.models import ChatRoom
 from dialog.models import AIDialog, AIEmotionalAnalysis, UserDialog
-from dialog.serializers import AIAppliedStateSerializer, AIMessageSerializer, DialogSerializer, UserMessageSerializer
+from dialog.serializers import AIMessageSerializer, DialogSerializer, UserMessageSerializer
 from gemini.models import GeminiModel
 
 
@@ -98,20 +98,6 @@ class AIMessageView(CreateAPIView):
         )
 
 
-class AIAppliedStateView(RetrieveAPIView):
-    serializer_class = AIAppliedStateSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        message_uuid = kwargs.get("message_uuid")
-        if not message_uuid:
-            return Response(data={"message": "message_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        ai_dialog = get_object_or_404(AIDialog, message_uuid=message_uuid)
-        serializer = self.get_serializer(ai_dialog)
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
-
-
 class DialogListView(RetrieveAPIView):
     serializer_class = DialogSerializer
     permission_classes = [IsAuthenticated]
@@ -141,6 +127,7 @@ class DialogListView(RetrieveAPIView):
                                     "indifference": ai_emotional_analysis.indifference,
                                 },
                             },
+                            "applied_state": ai_dialog.applied_state,
                         }
                     )
                 else:
