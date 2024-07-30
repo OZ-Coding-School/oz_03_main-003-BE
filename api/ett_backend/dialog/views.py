@@ -43,16 +43,19 @@ class UserMessageView(ListCreateAPIView):
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         user_dialog = UserDialog.objects.filter(
-            chat_room__chat_room_uuid=chat_room_uuid, chat_room__user=request.user, user=request.user
+            chat_room__chat_room_uuid=chat_room_uuid,
+            chat_room__user=request.user,
+            user=request.user
         )
         if not user_dialog:
             logger.error("/api/message/user/<uuid:chat_room_uuid>: user dialog not found")
             return Response(data={"message": "user dialog not found"}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = self.get_serializer(user_dialog, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class AIMessageView(CreateAPIView):
+class AIMessageView(ListCreateAPIView):
     serializer_class = AIMessageSerializer
     permission_classes = [IsAuthenticated]
 
@@ -113,6 +116,24 @@ class AIMessageView(CreateAPIView):
             data=serializer.data,
             status=status.HTTP_200_OK,
         )
+
+    def get(self, request, *args, **kwargs):
+        logger.info("GET /api/message/ai/<uuid:chat_room_uuid>")
+        chat_room_uuid = kwargs.get("chat_room_uuid")
+        if not chat_room_uuid:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: chat_room_uuid is required")
+            return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ai_dialog = AIDialog.objects.filter(
+            user_dialog__user = request.user,
+            user_dialog__chat_room__chat_room_uuid=chat_room_uuid,
+        )
+        if not ai_dialog:
+            logger.error("/api/message/ai/<uuid:chat_room_uuid>: ai dialog not found")
+            return Response(data={"message": "ai dialog not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(ai_dialog, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
 class DialogListView(RetrieveAPIView):
