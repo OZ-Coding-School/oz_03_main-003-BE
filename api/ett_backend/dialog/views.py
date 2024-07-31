@@ -43,9 +43,7 @@ class UserMessageView(ListCreateAPIView):
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         user_dialog = UserDialog.objects.filter(
-            chat_room__chat_room_uuid=chat_room_uuid,
-            chat_room__user=request.user,
-            user=request.user
+            chat_room__chat_room_uuid=chat_room_uuid, chat_room__user=request.user, user=request.user
         )
         if not user_dialog:
             logger.error("/api/message/user/<uuid:chat_room_uuid>: user dialog not found")
@@ -125,7 +123,7 @@ class AIMessageView(ListCreateAPIView):
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         ai_dialog = AIDialog.objects.filter(
-            user_dialog__user = request.user,
+            user_dialog__user=request.user,
             user_dialog__chat_room__chat_room_uuid=chat_room_uuid,
         )
         if not ai_dialog:
@@ -148,7 +146,7 @@ class DialogListView(RetrieveAPIView):
             return Response(data={"message": "chat_room_uuid is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         chat_room = get_object_or_404(ChatRoom, chat_room_uuid=chat_room_uuid, user=request.user)
-        user_dialogs = UserDialog.objects.filter(chat_room=chat_room).select_related("ai_dialog")
+        user_dialogs = UserDialog.objects.filter(chat_room=chat_room).select_related("ai_dialog").order_by("created_at")
         response_data = []
 
         for user_dialog in user_dialogs:
