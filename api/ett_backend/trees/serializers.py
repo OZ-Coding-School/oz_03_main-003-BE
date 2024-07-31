@@ -73,6 +73,7 @@ class TreeUpdateSerializer(serializers.ModelSerializer):
 
 
 class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
+    MIN_APPLY_VALUE = 3.0
 
     def validate(self, attrs):
         for emotion in ["happiness", "anger", "sadness", "worry", "indifference"]:
@@ -94,7 +95,9 @@ class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
 
         for emotion in emotions:
             increment = validated_data.get(emotion, getattr(instance, emotion))
-            setattr(instance, emotion, update_emotion(emotion, increment))
+            # MIN_APPLY_VALUE 이상인 감정 분석 결과만 트리 감정 테이블에 반영
+            if increment >= self.MIN_APPLY_VALUE:
+                setattr(instance, emotion, update_emotion(emotion, increment))
 
         instance.save()
         return instance
