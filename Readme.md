@@ -35,7 +35,6 @@
   </tr>
 </table>
 
-
 ## 사용 기술
 
 ### Backend
@@ -67,6 +66,12 @@
 ### 2. Project Architecture
 
 ![image](https://github.com/user-attachments/assets/5adf7e75-2873-4d60-90e9-f7dd547cd7f5)
+
+---
+
+## 구현 API 종류
+
+![image](https://github.com/user-attachments/assets/f81df2e8-f88d-4d9e-92d0-687bcb2bf1c8)
 
 ---
 
