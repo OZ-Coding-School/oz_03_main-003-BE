@@ -26,7 +26,7 @@ class GeminiModel:
             model_name="gemini-1.5-flash-latest",
             generation_config=genai.GenerationConfig(
                 candidate_count=1,
-                temperature=1.25,
+                temperature=1.2,
                 response_mime_type="application/json",
             ),
             system_instruction=self._system_instructions,
