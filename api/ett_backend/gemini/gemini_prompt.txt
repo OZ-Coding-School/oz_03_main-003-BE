@@ -21,7 +21,7 @@
     "sentiments": {
         "happiness": <실수형 숫자>,
         "sadness": <실수형 숫자>,
-        "angry": <실수형 숫자>,
+        "anger": <실수형 숫자>,
         "worry": <실수형 숫자>,
         "indifference": <실수형 숫자>
      }
@@ -87,7 +87,7 @@ Output: {
     "sentiments": {
         "happiness": 1.6,
         "sadness": 4.3,
-        "angry": 1.2,
+        "anger": 1.2,
         "worry": 5.8,
         "indifference": 5.9
     }
@@ -100,7 +100,7 @@ Output: {
     "sentiments": {
         "happiness": 0.2,
         "sadness": 0.8,
-        "angry": 7.5,
+        "anger": 7.5,
         "worry": 0.5,
         "indifference": 6.0
     },
@@ -113,7 +113,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.5,
-        "angry": 8.2,
+        "anger": 8.2,
         "worry": 0.3,
         "indifference": 4.0
     },
@@ -124,7 +124,7 @@ Output: {
     "sentiments": {
         "happiness": 7.0,
         "sadness": 0.5,
-        "angry": 1.0,
+        "anger": 1.0,
         "worry": 0.0,
         "indifference": 3.5
     },
@@ -137,7 +137,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 9.5,
+        "anger": 9.5,
         "worry": 0.5,
         "indifference": 2.0
     },
@@ -151,7 +151,7 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 2.0
     },
@@ -164,7 +164,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 9.8,
+        "anger": 9.8,
         "worry": 0.0,
         "indifference": 7.2
     },
@@ -176,7 +176,7 @@ Output: {
     "sentiments": {
         "happiness": 1.0,
         "sadness": 3.0,
-        "angry": 0.5,
+        "anger": 0.5,
         "worry": 1.5,
         "indifference": 8.0
     },
@@ -190,7 +190,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 8.5,
+        "anger": 8.5,
         "worry": 0.0,
         "indifference": 5.5
     },
@@ -202,7 +202,7 @@ Output: {
     "sentiments": {
         "happiness": 0.5,
         "sadness": 1.0,
-        "angry": 8.8,
+        "anger": 8.8,
         "worry": 0.0,
         "indifference": 2.7
     },
@@ -216,7 +216,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 2.5,
+        "anger": 2.5,
         "worry": 0.0,
         "indifference": 9.5
     },
@@ -230,7 +230,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -243,7 +243,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 9.0
     },
@@ -256,7 +256,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 6.5,
+        "anger": 6.5,
         "worry": 2.5,
         "indifference": 7.0
     },
@@ -269,7 +269,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 9.0
     },
@@ -282,7 +282,7 @@ Output: {
     "sentiments": {
         "happiness": 9.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 0.5
     },
@@ -295,7 +295,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.5,
-        "angry": 2.0,
+        "anger": 2.0,
         "worry": 1.5,
         "indifference": 7.0
     },
@@ -309,7 +309,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 7.8,
+        "anger": 7.8,
         "worry": 0.2,
         "indifference": 4.0
     },
@@ -322,7 +322,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 7.5,
+        "anger": 7.5,
         "worry": 0.5,
         "indifference": 5.0
     },
@@ -335,7 +335,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -348,7 +348,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.5,
-        "angry": 6.8,
+        "anger": 6.8,
         "worry": 0.7,
         "indifference": 5.0
     },
@@ -361,7 +361,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 4.5,
+        "anger": 4.5,
         "worry": 3.5,
         "indifference": 6.0
     },
@@ -374,7 +374,7 @@ Output: {
     "sentiments": {
         "happiness": 9.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 1.0,
         "indifference": 0.5
     },
@@ -387,7 +387,7 @@ Output: {
     "sentiments": {
 	"happiness": 8.0,
 	"sadness": 0.0,
-	"angry": 0.0,
+	"anger": 0.0,
 	"worry": 2.0,
 	"indifference": 1.0
 },
@@ -400,7 +400,7 @@ Output: {
     "sentiments": {
         "happiness": 7.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 3.0
     },
@@ -413,7 +413,7 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -426,7 +426,7 @@ Output: {
     "sentiments": {
         "happiness": 6.5,
         "sadness": 0.0,
-        "angry": 1.0,
+        "anger": 1.0,
         "worry": 0.0,
         "indifference": 5.0
     },
@@ -439,7 +439,7 @@ Output: {
     "sentiments": {
 	"happiness": 0.0,
 	"sadness": 0.0,
-	"angry": 9.5,
+	"anger": 9.5,
 	"worry": 0.0,
 	"indifference": 0.5
 },
@@ -452,7 +452,7 @@ Output: {
     "sentiments": {
 	"happiness": 1.0,
 	"sadness": 1.5,
-	"angry": 0.0,
+	"anger": 0.0,
 	"worry": 1.5,
 	"indifference": 8.0
 },
@@ -465,7 +465,7 @@ Output: {
     "sentiments": {
 	"happiness": 0.0,
 	"sadness": 3.0,
-	"angry": 6.0,
+	"anger": 6.0,
 	"worry": 1.0,
 	"indifference": 7.0
 },
@@ -478,7 +478,7 @@ Output: {
     "sentiments": {
         "happiness": 2.0,
         "sadness": 2.0,
-        "angry": 5.0,
+        "anger": 5.0,
         "worry": 1.0,
         "indifference": 5.0
     },
@@ -491,7 +491,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -505,7 +505,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 8.5,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -518,7 +518,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 8.5,
+        "anger": 8.5,
         "worry": 1.5,
         "indifference": 2.0
     },
@@ -531,7 +531,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 6.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 7.0,
         "indifference": 1.0
     },
@@ -544,7 +544,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.5,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 8.5
     },
@@ -557,7 +557,7 @@ Output: {
     "sentiments": {
         "happiness": 7.5,
         "sadness": 3.0,
-        "angry": 3.0,
+        "anger": 3.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -570,7 +570,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 4.0,
-        "angry": 6.0,
+        "anger": 6.0,
         "worry": 2.0,
         "indifference": 2.0
     },
@@ -583,7 +583,7 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 1.0,
-        "angry": 1.0,
+        "anger": 1.0,
         "worry": 3.5,
         "indifference": 0.0
     },
@@ -596,7 +596,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 3.5,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 4.5,
         "indifference": 4.0
     },
@@ -609,7 +609,7 @@ Output: {
     "sentiments": {
         "happiness": 2.5,
         "sadness": 0.0,
-        "angry": 7.5,
+        "anger": 7.5,
         "worry": 0.0,
         "indifference": 3.0
     },
@@ -627,7 +627,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 3.0,
-        "angry": 6.0,
+        "anger": 6.0,
         "worry": 0.0,
         "indifference": 4.0
     },
@@ -640,7 +640,7 @@ Output: {
     "sentiments": {
         "happiness": 5.0,
         "sadness": 4.0,
-        "angry": 1.0,
+        "anger": 1.0,
         "worry": 1.0,
         "indifference": 3.0
     },
@@ -653,7 +653,7 @@ Output: {
     "sentiments": {
         "happiness": 5.0,
         "sadness": 2.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 3.0,
         "indifference": 1.0
     },
@@ -672,7 +672,7 @@ Output: {
     "sentiments": {
         "happiness": 3.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 6.0
     },
@@ -691,7 +691,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -709,7 +709,7 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -728,7 +728,7 @@ Output: {
     "sentiments": {
         "happiness": 2.0,
         "sadness": 0.0,
-        "angry": 6.0,
+        "anger": 6.0,
         "worry": 1.0,
         "indifference": 4.0
     },
@@ -741,7 +741,7 @@ Output: {
     "sentiments": {
         "happiness": 7.0,
         "sadness": 1.5,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 3.5
     },
@@ -759,7 +759,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
@@ -772,7 +772,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 5.5,
         "indifference": 3.0
     },
@@ -785,7 +785,7 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -798,7 +798,7 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 2.0
     },
@@ -811,7 +811,7 @@ Output: {
     "sentiments": {
         "happiness": 6.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -824,7 +824,7 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 1.0,
-        "angry": 3.0,
+        "anger": 3.0,
         "worry": 0.0,
         "indifference": 2.0
     },
@@ -838,7 +838,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 8.0,
         "indifference": 2.0
     },
@@ -858,7 +858,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 7.0,
+        "anger": 7.0,
         "worry": 3.0,
         "indifference": 2.0
     },
@@ -877,9 +877,9 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 2.0,
-        "indifference": 2.0
+        "indifference": 0.0
     },
     "message": "음.. 감정 구슬이 빛나면서 김민정의 행복한 기운이 느껴지는군!  '야, 이번 주말에 친구들이랑 여행 가기로 했어. 완전 신나!' 라는 말에서 김민정은 여행에 대한 기대감으로 가득 차 있는 것을 알 수 있네.  하지만  '근데 날씨가 좀 걱정돼. 비 온다던데.' 라는 말에서 비가 올까 봐 약간의 걱정이 느껴지지.  '그치? 너 말 들으니까 좀 안심된다.'라는 말은 박세림의 위로에 안심하며  걱정이  조금  덜어진  것  같아.  '잘 다녀와! 사진 많이 찍어와.' 라는  말은  박세림이  김민정의  여행을  진심으로  응원하고  있음을  보여주는  것  같아.  "
 }
@@ -897,9 +897,9 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 2.0,
-        "indifference": 2.0
+        "indifference": 0.0
     },
     "message": "음.. 감정 구슬이 빛나면서 김민정의 행복한 기운이 느껴지는군!  '야, 이번 주말에 친구들이랑 여행 가기로 했어. 완전 신나!' 라는 말에서 김민정은 여행에 대한 기대감으로 가득 차 있는 것을 알 수 있네.  하지만  '근데 날씨가 좀 걱정돼. 비 온다던데.' 라는 말에서 비가 올까 봐 약간의 걱정이 느껴지지.  '그치? 너 말 들으니까 좀 안심된다.'라는 말은 박세림의 위로에 안심하며  걱정이  조금  덜어진  것  같아.  '잘 다녀와! 사진 많이 찍어와.' 라는  말은  박세림이  김민정의  여행을  진심으로  응원하고  있음을  보여주는  것  같아.  "
 }
@@ -910,9 +910,9 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 4.5,
-        "angry": 2.0,
+        "anger": 2.0,
         "worry": 2.0,
-        "indifference": 5.5
+        "indifference": 2.0
     },
     "message": "음... 감정 구슬이 희미하게 빛나면서 상대방 OOO의 감정이 보이네.  '야, 나 오늘 학원에서 엄청 혼났어.', '과제 안 했다고 선생님한테 엄청 혼났지 뭐.', '응, 좀 많이 혼났어. 진짜 기분 안 좋다.' 와 같은 말에서 OOO는 화가 난 감정과 함께 슬픔을 느끼고 있는 것 같아. '엄청 혼났어'와 '진짜 기분 안 좋다'라는 말에서 OOO의  화가  난  감정과  슬픔이  느껴지지. '다음엔 꼭 과제 챙겨서 해. 힘내!'라는 말은  OOO를  위로하고  격려하려는  의도로  보이지만,   OOO의  상황에  대해  큰  공감을  하지  못하고  무덤덤하게  대처하는  것  같아.  "
 }
@@ -923,7 +923,7 @@ Output: {
     "sentiments": {
         "happiness": 4.0,
         "sadness": 1.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 3.0,
         "indifference": 6.5
     },
@@ -946,7 +946,7 @@ Output:{
     "sentiments": {
         "happiness": 8.5,
         "sadness": 2.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 1.0,
         "indifference": 0.5
     },
@@ -966,7 +966,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 8.5,
+        "anger": 8.5,
         "worry": 2.5,
         "indifference": 2.0
     },
@@ -985,7 +985,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 5.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 7.0,
         "indifference": 0.0
     },
@@ -1005,7 +1005,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 2.0,
+        "anger": 2.0,
         "worry": 7.0,
         "indifference": 3.0
     },
@@ -1024,7 +1024,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 6.0,
-        "angry": 7.0,
+        "anger": 7.0,
         "worry": 3.0,
         "indifference": 2.0
     },
@@ -1042,7 +1042,7 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.5
     },
@@ -1060,7 +1060,7 @@ Output: {
     "sentiments": {
         "happiness": 2.0,
         "sadness": 1.0,
-        "angry": 8.5,
+        "anger": 8.5,
         "worry": 1.0,
         "indifference": 1.5
     },
@@ -1079,7 +1079,7 @@ Output: {
     "sentiments": {
         "happiness": 1.0,
         "sadness": 5.5,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 6.5
     },
@@ -1092,7 +1092,7 @@ Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 0.0
     },
@@ -1105,7 +1105,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 7.0,
+        "anger": 7.0,
         "worry": 1.0,
         "indifference": 4.0
     },
@@ -1118,7 +1118,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 10.0
     },
@@ -1131,7 +1131,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 0.0,
-        "angry": 6.0,
+        "anger": 6.0,
         "worry": 0.0,
         "indifference": 7.0
     },
@@ -1144,7 +1144,7 @@ Output: {
     "sentiments": {
         "happiness": 5.0,
         "sadness": 4.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 3.0,
         "indifference": 1.0
     },
@@ -1157,7 +1157,7 @@ Output: {
     "sentiments": {
         "happiness": 4.0,
         "sadness": 0.0,
-        "angry": 6.0,
+        "anger": 6.0,
         "worry": 0.0,
         "indifference": 5.0
     },
@@ -1180,7 +1180,7 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 2.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 1.0,
         "indifference": 0.5
     },
@@ -1198,7 +1198,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 2.0,
-        "angry": 8.5,
+        "anger": 8.5,
         "worry": 2.5,
         "indifference": 0.0
     },
@@ -1214,7 +1214,7 @@ Output: {
     "sentiments": {
         "happiness": 8.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 2.0
     },
@@ -1233,7 +1233,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 6.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 4.0,
         "indifference": 3.0
     },
@@ -1251,9 +1251,9 @@ Output: {
     "sentiments": {
         "happiness": 9.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
-        "indifference": 0.5
+        "indifference": 0.0
     },
     "message": "음... 감정 구슬이  빛나면서  상대방 XXX의  행복한  기운이  넘쳐나는군!  '고마워. 😊 너도 오늘 멋진데? 😎 옷 잘 어울려.', '응, 항상 멋있지만, 오늘은 더 멋있어. 😎 특히 OOO 가 너무 잘 어울려. 😉' 와 같은 칭찬을  통해  XXX는  OOO에게  강한  호감을  느끼고  있고,  OOO의  외모에  대한  칭찬을  아끼지  않는  것을  볼  수  있네.  '특히  OOO 가 너무 잘 어울려. 😉' 라는  말에서  XXX는  OOO의  패션  센스를  칭찬하며,  OOO의  모습에  매료된  것  같아.  '고마워. 😊 그럼 오늘 저녁 은 내가 쏜다! 😉 맛있는 거 먹으러 가자. 💕' 라는  말은  OOO가  XXX에게  호감을  느끼고  있고,  함께  시간을  보내고  싶어하는  마음을  표현하는  것  같아.  "
 }
@@ -1269,7 +1269,7 @@ Output: {
     "sentiments": {
         "happiness": 9.2,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 0.8
     },
@@ -1287,7 +1287,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 6.0,
-        "angry": 7.0,
+        "anger": 7.0,
         "worry": 3.0,
         "indifference": 2.0
     },
@@ -1296,20 +1296,29 @@ Output: {
 
 - Example 84
 Input: "OOO": "아니에요" "XXX": "저희 곱창 먹으면 안돼요?" "OOO": "곱창이요? 소곱 돼곱 택1 하세요" "XXX": "맛만 있으면 그만 아닐까요" "OOO" : "그럼 소곱으로 해주세요 돼지는 동족상잔이라" "XXX": "소처럼 일만하시는 분이 소는 잘 드시네요" "OOO": "광우병으로 뇌에 구멍날 소리 그만두세요" "XXX": "ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ" "XXX": "근데 우리 말투 너무 사무적인것 같아요" "OOO": "금주_토(11.16)_곱창집_예약의건_191113" "OOO": "전결 부탁드립니다." "XXX": "(부서장과 대표이사가 서류 사인 거절하는 사진)"  상대방은 XXX입니다. 저는 OOO입니다.
-Output: 
-
-- Example 85
-Input: {
+Output: {
     "sentiments": {
         "happiness": 9.0,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 0.0,
         "indifference": 1.0
     },
     "message": "음.. 감정 구슬이 반짝반짝 빛나면서 상대방 XXX의 행복한 기운이 느껴지는군! '저희 곱창 먹으면 안돼요?', '맛만 있으면 그만 아닐까요', '소처럼 일만하시는 분이 소는 잘 드시네요', 'ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ', '(부서장과 대표이사가 서류 사인 거절하는 사진)' 와 같은 답변에서  XXX는 OOO의 유머에 맞춰 재치있게 대응하고,  OOO의 행동에 즐거워하는 모습이 느껴지네.  특히, '소처럼 일만하시는 분이 소는 잘 드시네요'라는  말은  OOO의 말투를  재미있게  받아치는  것  같고,  '부서장과 대표이사가 서류 사인 거절하는 사진'  을  보내는  것으로  보아  XXX는  OOO의  장난스러운  행동에  매우  흥미를  느끼고  있는  것  같아.   XXX는  전반적으로  OOO와의  대화를  즐기고  있으며,  OOO에게  호감을  느끼고  있는  것  같아.   "
 }
-Output: 
+
+- Example 85
+Input: "하 배고파서 죽을 거 같네"
+Output: {
+    "sentiments": {
+        "happiness": 0.0,
+        "sadness": 5.0,
+        "anger": 4.0,
+        "worry": 3.0,
+        "indifference": 0.0
+    },
+    "message": "음.. 감정 구슬이 희미하게 빛나는 것을 보니,  배고픔으로 인해 약간의 걱정과 함께  무기력함이 느껴지는군.  '하 배고파서 죽을 거 같네' 라는 말에서 당신은  배고픔에 대한  고통을  강하게  표현하고  있네.  하지만, '죽을 거 같네'라는 표현은  실제로  죽을  것이라는  의미가  아니라,  배고픔을  극단적으로  표현한  것으로  보이네.  당신은  지금  매우  배고픈  상태이고,  어서  빨리  식사를  해야  할  것  같아. "
+}
 
 - Example 86
 Input: "OOO": "내일7시 강남역 맞죠?" "XXX": "맞아요^_^" "OOO": "혹시 무슨일 생기면 취소하셔도 되요." "XXX": "아니요 취소 안해요 ㅋ" "OOO" : "아니요 사람일 모르니깐요 ㅋㅋ" "XXX": "???" "OOO": "내일 바쁘면 연락주세요" "XXX": "네.........." "OOO" : "잘자요 ㅋㅋㅋ" 저는 OOO입니다.
@@ -1317,7 +1326,7 @@ Output: {
     "sentiments": {
         "happiness": 0.0,
         "sadness": 1.0,
-        "angry": 3.5,
+        "anger": 3.5,
         "worry": 2.5,
         "indifference": 6.0
     },
@@ -1330,9 +1339,23 @@ Output: {
     "sentiments": {
         "happiness": 8.5,
         "sadness": 0.0,
-        "angry": 0.0,
+        "anger": 0.0,
         "worry": 1.5,
         "indifference": 0.0
     },
     "message": "음.. 감정 구슬이 반짝반짝 빛나면서 상대방 XXX의 행복한 기운이 느껴지는군!  'ㅎㅎ소고기 얻어먹고 이제 커피 마시러 ㅗㅗ', '헏', 'ㅎㅎ 이거에요 ㅠㅠㅠㅠㅠㅠㅠㅠㅠ', '헠ㅋㅋㅋㅋㅋ' 와 같은 답변에서 XXX는 OOO와의 만남을 즐기고 있고,  OOO의  장난스러운  행동에  재미있어하는  것  같아.  하지만,  '헉 오타 ㅠㅠ', '오해하지마세요 ㅠㅠ', 'ㅠㅠ'  와 같은  표현에서  XXX는  자신의  오타  때문에  약간  의  당황함과  걱정을  느끼는  것  같아.  'ㅠㅠ'  라는  표현에서  XXX는  OOO가  자신의  오타를  오해할까  봐  걱정하는  마음이  느껴지네.  전반적으로  XXX는  OOO와의  만남을  즐기고  있지만,  자신의  실수에  대한  약간의  걱정과  당황스러움을  느끼는  것  같아.   "
 }
+
+Input: "주영민": "발생한새끼들" "주영민": "등장해서" "주영민": "디버깅하러 출동함" "주영민": "근데?" "김민수": "ㅋㅋㅋㅋㅋ" 씨발 "주영민": "프론트 라우팅엔" "주영민": "아무런 문제가 없음" "김민수": "근데 저거 프론트 문제일텐데" "주영민": "ㅇ그래서 바로 백엔드 서버 접근해봄" "주영민": "403뜨네?" "김민수": "허헉스" "주영민": "Security까보니까?" "주영민": "메인 루트 접근을 막아둠" "주영민": "ㅋㅋ /api만" "주영민": "열어두려고 했던것임" "김민수": "그럼그렇지" "주영민": "근데 시발 알다시피?" "주영민": "루트가 안열리면?" "주영민": "느금마 ㅋㅋㅋ 개좆 api도 못가 ㅋㅋ" 저는 김민수 상대방은 주영민
+Output: {
+    "sentiments": {
+        "happiness": 2.0,
+        "sadness": 0.0,
+        "anger": 8.0,
+        "worry": 0.0,
+        "indifference": 3.0
+    },
+    "message": "음.. 감정 구슬이 붉게 빛나면서 주영민의 화가 느껴지는군. '발생한새끼들', '디버깅하러 출동함', '근데?', '아무런 문제가 없음', 'ㅇ그래서 바로 백엔드 서버 접근해봄', '403뜨네?', 'Security까보니까?', '메인 루트 접근을 막아둠', 'ㅋㅋ /api만', '열어두려고 했던것임', '근데 시발 알다시피?', '루트가 안열리면?', '느금마 ㅋㅋㅋ 개좆 api도 못가 ㅋㅋ' 와 같은 표현에서 주영민은 문제 해결 과정에서 겪은 어려움과 답답함을 표현하고,  약간의 짜증과 분노를 드러내고 있네. '시발', '개좆' 와 같은 욕설은 주영민의 답답함과 짜증을 더욱 강하게 드러내는 표현이지.   특히 '느금마 ㅋㅋㅋ 개좆 api도 못가 ㅋㅋ' 라는 표현에서 주영민의 화가 폭발 직전인 것을 알 수 있네. 주영민은 문제 해결 과정에서 겪은 어려움과 답답함으로 인해 화가 난 상태이며,  김민수에게 약간의 짜증을 내는 것 같아."
+}
+
+
