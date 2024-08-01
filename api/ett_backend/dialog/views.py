@@ -1,6 +1,7 @@
 import json
 
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, ListCreateAPIView, RetrieveAPIView, get_object_or_404
 from rest_framework.permissions import IsAuthenticated
@@ -32,7 +33,9 @@ class UserMessageView(ListCreateAPIView):
             user_dialog = UserDialog.objects.create(
                 user=request.user, chat_room=chat_room, message=serializer.validated_data["message"]
             )
+            chat_room.updated_at = timezone.now()
             user_dialog.save()
+            chat_room.save()
         return Response(data={"message_uuid": str(user_dialog.message_uuid)}, status=status.HTTP_201_CREATED)
 
     def get(self, request, *args, **kwargs):
@@ -107,8 +110,9 @@ class AIMessageView(ListCreateAPIView):
                     "anger": structured_response["sentiments"].get("anger", 0.0),
                     "sadness": structured_response["sentiments"].get("sadness", 0.0),
                     "worry": structured_response["sentiments"].get("worry", 0.0),
-                    "indifference":
-                        round(structured_response["sentiments"].get("indifference", 0.0) * self.INDIFFERENCE_WEIGHT, 1),
+                    "indifference": round(
+                        structured_response["sentiments"].get("indifference", 0.0) * self.INDIFFERENCE_WEIGHT, 1
+                    ),
                 },
             )
 

@@ -48,7 +48,7 @@ class ChatRoomListView(ListAPIView):
     def get(self, request, *args, **kwargs):
         logger.info("GET /api/chat")
         user = request.user
-        chat_rooms = ChatRoom.objects.filter(user=user)
+        chat_rooms = ChatRoom.objects.filter(user=user).order_by("-created_at", "-updated_at")
         serializer = ChatRoomSerializer(chat_rooms, many=True)
         return Response(data=serializer.data, status=status.HTTP_200_OK)
 
