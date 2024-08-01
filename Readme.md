@@ -1,6 +1,7 @@
 ## Emotion Tree Talk 프로젝트 백엔드 Readme 전용 레포지토리🎄
 
-![image](https://github.com/user-attachments/assets/00650986-3e36-402c-aa90-21bdc285bf68)
+### 이미지 클릭 시 웹 사이트로 이동합니다.
+[https://emotree.yoyobar.xyz](https://github.com/user-attachments/assets/00650986-3e36-402c-aa90-21bdc285bf68)
 
 ## 팀원 소개
 
