@@ -25,7 +25,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChatRoom
-        fields = ["chat_room_uuid", "chat_room_name", "tree_uuid"]
+        fields = ["chat_room_uuid", "chat_room_name", "tree_uuid", "created_at", "updated_at"]
 
 
 class ChatRoomUpdateSerializer(serializers.ModelSerializer):

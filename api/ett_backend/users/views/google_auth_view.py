@@ -47,6 +47,7 @@ class UserGoogleTokenReceiver(generics.GenericAPIView):
                         "profile_image": profile_image,
                         "social_platform": "google",
                         "is_active": True,
+                        "last_login": timezone.now(),
                     },
                 )
                 response = Response(data={"message": "Login successful"}, status=status.HTTP_201_CREATED)
