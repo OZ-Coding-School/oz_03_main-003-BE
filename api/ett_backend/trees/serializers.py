@@ -87,7 +87,7 @@ class TreeEmotionUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         def update_emotion(_emotion, _increment):
-            # 기존 값 + 새로 들어온 값 전체적으로 업데이트
+            # (기존 값 + 새로 들어온 값)으로 업데이트
             new_value = getattr(instance, _emotion) + _increment
             return min(new_value, MAX_EMOTION_VALUE)
 

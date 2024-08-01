@@ -224,16 +224,16 @@ LOGGING = {
     "loggers": {
         "": {
             "handlers": ["file", "console"],
-            "level": "DEBUG",
+            "level": os.getenv("LOGGING_LEVEL", "INFO"),
         },
         "django.db.backends": {  # 데이터베이스 CRUD 로그 기록
             "handlers": ["file", "console"],
-            "level": "DEBUG",  # INFO 수준에서 DEBUG로 변경하여 더 많은 DB 로그를 기록
+            "level": os.getenv("DB_LOGGING_LEVEL", "INFO"),  # INFO 수준에서 DEBUG로 변경하여 더 많은 DB 로그를 기록
             "propagate": False,
         },
         "django.request": {  # HTTP 요청 및 응답 로그 기록
             "handlers": ["file", "console"],
-            "level": "DEBUG",
+            "level": os.getenv("REQUEST_LOGGING_LEVEL", "INFO"),
             "propagate": False,
         },
     },
