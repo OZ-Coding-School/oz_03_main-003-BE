@@ -57,6 +57,8 @@ class AIMessageView(ListCreateAPIView):
     serializer_class = AIMessageSerializer
     permission_classes = [IsAuthenticated]
 
+    INDIFFERENCE_WEIGHT = 0.6
+
     def create(self, request, *args, **kwargs):
         logger.info("POST /api/message/ai/<uuid:chat_room_uuid>")
         chat_room_uuid = kwargs.get("chat_room_uuid")
@@ -105,7 +107,8 @@ class AIMessageView(ListCreateAPIView):
                     "anger": structured_response["sentiments"].get("anger", 0.0),
                     "sadness": structured_response["sentiments"].get("sadness", 0.0),
                     "worry": structured_response["sentiments"].get("worry", 0.0),
-                    "indifference": structured_response["sentiments"].get("indifference", 0.0),
+                    "indifference":
+                        round(structured_response["sentiments"].get("indifference", 0.0) * self.INDIFFERENCE_WEIGHT, 1),
                 },
             )
 
